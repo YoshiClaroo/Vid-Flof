@@ -11,7 +11,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const analytics = getAnalytics(app);
 
 window.dbFunctions = {
   saveLink: async (id, data) => await setDoc(doc(db, "links", id), data),
