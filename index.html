@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoLink Generator | Professional</title>
+    <title>VideoLink Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -133,62 +133,69 @@
             <input type="text" id="redirectUrl" placeholder="https://tuenlace.com">
         </div>
         
-        <button onclick="generateLink()">Generar Enlace</button>
+        <button id="generateBtn">Generar Enlace</button>
         
         <div id="result" class="result">
             <h3>¡Enlace generado con éxito!</h3>
             <input type="text" id="generatedLink" readonly>
             <div class="result-actions">
-                <button onclick="copyLink()">Copiar Enlace</button>
-                <button onclick="newLink()">Generar Otro</button>
+                <button id="copyBtn">Copiar Enlace</button>
+                <button id="newBtn">Generar Otro</button>
             </div>
         </div>
     </div>
 
-    <script>
-        async function generateLink() {
-            const videoUrl = document.getElementById("videoUrl").value;
-            const redirectUrl = document.getElementById("redirectUrl").value;
+    <script type="module">
+        import { dbFunctions } from '/firebase.js';
+        
+        // Elementos del DOM
+        const generateBtn = document.getElementById("generateBtn");
+        const copyBtn = document.getElementById("copyBtn");
+        const newBtn = document.getElementById("newBtn");
+        const videoUrlInput = document.getElementById("videoUrl");
+        const redirectUrlInput = document.getElementById("redirectUrl");
+        const resultDiv = document.getElementById("result");
+        const generatedLinkInput = document.getElementById("generatedLink");
+        
+        // Generar enlace
+        generateBtn.addEventListener("click", async () => {
+            const videoUrl = videoUrlInput.value;
+            const redirectUrl = redirectUrlInput.value;
             
             if (!videoUrl || !redirectUrl) {
                 alert("Por favor completa ambos campos");
                 return;
             }
             
-            // Validar URL de video
-            if (!videoUrl.endsWith('.mp4')) {
-                alert("La URL del video debe terminar en .mp4");
-                return;
-            }
-            
-            const id = Math.random().toString(36).substring(2, 8);
-            const shortLink = `${window.location.origin}/play/${id}`;
-            
             try {
-                await window.dbFunctions.saveLink(id, { 
+                const id = Math.random().toString(36).substring(2, 8);
+                await dbFunctions.saveLink(id, { 
                     videoUrl: videoUrl, 
                     redirectUrl: redirectUrl 
                 });
                 
-                document.getElementById("generatedLink").value = shortLink;
-                document.getElementById("result").style.display = "block";
+                generatedLinkInput.value = `${window.location.origin}/play/${id}`;
+                resultDiv.style.display = "block";
+                
             } catch (error) {
                 alert("Error al guardar: " + error.message);
+                console.error(error);
             }
-        }
+        });
         
-        function copyLink() {
-            const input = document.getElementById("generatedLink");
-            input.select();
+        // Copiar enlace
+        copyBtn.addEventListener("click", () => {
+            generatedLinkInput.select();
             document.execCommand("copy");
             alert("Enlace copiado al portapapeles");
-        }
+        });
         
-        function newLink() {
-            document.getElementById("videoUrl").value = "";
-            document.getElementById("redirectUrl").value = "";
-            document.getElementById("result").style.display = "none";
-        }
+        // Nuevo enlace
+        newBtn.addEventListener("click", () => {
+            videoUrlInput.value = "";
+            redirectUrlInput.value = "";
+            resultDiv.style.display = "none";
+        });
     </script>
 </body>
 </html>
