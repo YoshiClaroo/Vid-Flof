@@ -3,162 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador VidFlow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Generador de Enlaces</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
             --dark: #212529;
             --light: #f8f9fa;
-            --border: #dee2e6;
         }
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f5f7ff;
-            color: var(--dark);
-            line-height: 1.6;
+            background: #f5f7ff;
             margin: 0;
-            padding: 0;
-            min-height: 100vh;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
         }
         .container {
-            width: 100%;
-            max-width: 600px;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem;
-            margin: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .header h1 {
+        h1 {
             color: var(--primary);
-            margin: 0;
-            font-weight: 600;
+            text-align: center;
+            margin-top: 0;
         }
-        .header p {
-            color: #6c757d;
-            margin-top: 0.5rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
+        .input-group {
+            margin-bottom: 20px;
         }
         label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 5px;
             font-weight: 500;
             color: var(--dark);
         }
         input {
             width: 100%;
-            padding: 0.8rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border 0.3s;
-        }
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
         }
         button {
-            background-color: var(--primary);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: 5px;
             cursor: pointer;
             width: 100%;
+            font-size: 16px;
             transition: background 0.3s;
         }
         button:hover {
-            background-color: #3a56d4;
+            background: #3a56d4;
         }
-        .result {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background-color: #f8f9fa;
-            border-radius: 8px;
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
             display: none;
-            animation: fadeIn 0.5s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        #generatedLink {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
         }
-        .result h3 {
-            margin-top: 0;
-            color: var(--primary);
-        }
-        .result-actions {
+        .action-buttons {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 10px;
         }
-        .result-actions button {
+        .action-buttons button {
             flex: 1;
         }
-        .result-actions button:last-child {
-            background-color: #6c757d;
-        }
-        .result-actions button:last-child:hover {
-            background-color: #5a6268;
+        .action-buttons button:last-child {
+            background: #6c757d;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Generador VidFlow</h1>
-            <p>Crea enlaces profesionales para tus videos</p>
-        </div>
+        <h1>Generador de Enlaces</h1>
         
-        <div class="form-group">
+        <div class="input-group">
             <label for="videoUrl">URL del Video (.mp4)</label>
             <input type="text" id="videoUrl" placeholder="https://ejemplo.com/video.mp4">
         </div>
         
-        <div class="form-group">
+        <div class="input-group">
             <label for="redirectUrl">URL de Redirección</label>
             <input type="text" id="redirectUrl" placeholder="https://tuenlace.com">
         </div>
         
         <button id="generateBtn">Generar Enlace</button>
         
-        <div id="result" class="result">
-            <h3>¡Enlace generado con éxito!</h3>
+        <div id="result">
             <input type="text" id="generatedLink" readonly>
-            <div class="result-actions">
+            <div class="action-buttons">
                 <button id="copyBtn">Copiar Enlace</button>
                 <button id="newBtn">Generar Otro</button>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { dbFunctions } from '/firebase.js';
-        
-        const generateBtn = document.getElementById("generateBtn");
-        const copyBtn = document.getElementById("copyBtn");
-        const newBtn = document.getElementById("newBtn");
-        const videoUrlInput = document.getElementById("videoUrl");
-        const redirectUrlInput = document.getElementById("redirectUrl");
-        const resultDiv = document.getElementById("result");
-        const generatedLinkInput = document.getElementById("generatedLink");
-        
-        generateBtn.addEventListener("click", async () => {
-            const videoUrl = videoUrlInput.value;
-            const redirectUrl = redirectUrlInput.value;
+    <script>
+        document.getElementById("generateBtn").addEventListener("click", async () => {
+            const videoUrl = document.getElementById("videoUrl").value;
+            const redirectUrl = document.getElementById("redirectUrl").value;
             
             if (!videoUrl || !redirectUrl) {
                 alert("Por favor completa ambos campos");
@@ -167,31 +126,29 @@
             
             try {
                 const id = Math.random().toString(36).substring(2, 8);
-                await dbFunctions.saveLink(id, { 
+                await window.dbFunctions.saveLink(id, { 
                     videoUrl: videoUrl, 
                     redirectUrl: redirectUrl 
                 });
                 
-                generatedLinkInput.value = `${window.location.origin}/play/${id}`;
-                resultDiv.style.display = "block";
-                
+                document.getElementById("generatedLink").value = `${window.location.origin}/play/${id}`;
+                document.getElementById("result").style.display = "block";
             } catch (error) {
                 alert("Error al guardar: " + error.message);
-                console.error(error);
             }
         });
         
-        copyBtn.addEventListener("click", () => {
-            generatedLinkInput.select();
+        document.getElementById("copyBtn").addEventListener("click", () => {
+            const input = document.getElementById("generatedLink");
+            input.select();
             document.execCommand("copy");
-            alert("Enlace copiado al portapapeles");
+            alert("Enlace copiado!");
         });
         
-        newBtn.addEventListener("click", () => {
-            videoUrlInput.value = "";
-            redirectUrlInput.value = "";
-            resultDiv.style.display = "none";
-            videoUrlInput.focus();
+        document.getElementById("newBtn").addEventListener("click", () => {
+            document.getElementById("videoUrl").value = "";
+            document.getElementById("redirectUrl").value = "";
+            document.getElementById("result").style.display = "none";
         });
     </script>
 </body>
