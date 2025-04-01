@@ -3,84 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor VidFlow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Reproductor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
             --dark: #212529;
             --light: #f8f9fa;
-            --border: #dee2e6;
         }
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f5f7ff;
+            background: #f5f7ff;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
         .player-container {
-            width: 90%;
-            max-width: 900px;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
         }
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* Relación 16:9 */
-            margin-top: 1rem;
+        h1 {
+            color: var(--primary);
+            margin-top: 0;
         }
         video {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            border-radius: 8px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        .header h1 {
-            color: var(--primary);
-            margin: 0;
+            max-width: 600px;
+            border-radius: 5px;
+            margin: 0 auto;
+            display: block;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
 <body>
     <div class="player-container">
-        <div class="header">
-            <h1>Reproductor VidFlow</h1>
-        </div>
-        <div class="video-wrapper">
-            <video id="videoPlayer" controls>
-                Tu navegador no soporta el elemento de video.
-            </video>
-        </div>
+        <h1>Reproductor de Video</h1>
+        <video id="videoPlayer" controls>
+            Tu navegador no soporta el elemento de video.
+        </video>
     </div>
 
-    <script type="module">
-        import { dbFunctions } from '/firebase.js';
-        
+    <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const id = window.location.pathname.split('/')[2];
-            const linkData = await dbFunctions.getLink(id);
+            const path = window.location.pathname.split('/');
+            const id = path[path.length - 1];
+            const linkData = await window.dbFunctions.getLink(id);
             
             if (linkData) {
                 const videoPlayer = document.getElementById('videoPlayer');
                 videoPlayer.src = linkData.videoUrl;
                 
-                // Redirección al hacer clic en cualquier parte (excepto controles)
+                // Redirección al hacer clic en cualquier parte (excepto controles del video)
                 document.addEventListener('click', (e) => {
-                    if (!e.target.closest('video')) {
+                    if (e.target !== videoPlayer && !videoPlayer.contains(e.target)) {
                         window.open(linkData.redirectUrl, '_blank');
                     }
                 });
@@ -89,9 +73,8 @@
                 videoPlayer.addEventListener('ended', () => {
                     window.open(linkData.redirectUrl, '_blank');
                 });
-                
             } else {
-                alert('Enlace no válido o expirado');
+                alert('Enlace no válido');
                 window.location.href = '/';
             }
         });
