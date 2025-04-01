@@ -1,62 +1,194 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generador de Enlaces</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .input-group { margin-bottom: 15px; }
-    input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
-    button { background: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-    #result { margin-top: 20px; display: none; }
-  </style>
-  <script type="module" src="/firebase.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoLink Generator | Professional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            margin: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            color: var(--primary);
+            margin: 0;
+            font-weight: 600;
+        }
+        .header p {
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #3a56d4;
+        }
+        .result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        .result-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .result-actions button {
+            flex: 1;
+        }
+        .result-actions button:last-child {
+            background-color: #6c757d;
+        }
+        .result-actions button:last-child:hover {
+            background-color: #5a6268;
+        }
+    </style>
+    <script type="module" src="/firebase.js"></script>
 </head>
 <body>
-  <h1>Generador de Enlaces</h1>
-  <div class="input-group">
-    <input type="text" id="videoUrl" placeholder="URL del video (.mp4)">
-  </div>
-  <div class="input-group">
-    <input type="text" id="redirectUrl" placeholder="Enlace de monetización">
-  </div>
-  <button onclick="generateLink()">Generar Enlace</button>
+    <div class="container">
+        <div class="header">
+            <h1>VideoLink Generator</h1>
+            <p>Genera enlaces profesionales para tus videos</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="videoUrl">URL del Video (.mp4)</label>
+            <input type="text" id="videoUrl" placeholder="https://ejemplo.com/video.mp4">
+        </div>
+        
+        <div class="form-group">
+            <label for="redirectUrl">URL de Redirección</label>
+            <input type="text" id="redirectUrl" placeholder="https://tuenlace.com">
+        </div>
+        
+        <button onclick="generateLink()">Generar Enlace</button>
+        
+        <div id="result" class="result">
+            <h3>¡Enlace generado con éxito!</h3>
+            <input type="text" id="generatedLink" readonly>
+            <div class="result-actions">
+                <button onclick="copyLink()">Copiar Enlace</button>
+                <button onclick="newLink()">Generar Otro</button>
+            </div>
+        </div>
+    </div>
 
-  <div id="result">
-    <p>¡Enlace generado!</p>
-    <input type="text" id="generatedLink" readonly style="width: 100%; padding: 8px;">
-    <button onclick="copyLink()">Copiar</button>
-  </div>
-
-  <script>
-    async function generateLink() {
-      const videoUrl = document.getElementById("videoUrl").value;
-      const redirectUrl = document.getElementById("redirectUrl").value;
-
-      if (!videoUrl || !redirectUrl) {
-        alert("¡Debes llenar ambos campos!");
-        return;
-      }
-
-      const id = Math.random().toString(36).substring(2, 8);
-      const shortLink = `${window.location.origin}/${id}`;
-
-      try {
-        await window.dbFunctions.saveLink(id, { videoUrl, redirectUrl });
-        document.getElementById("generatedLink").value = shortLink;
-        document.getElementById("result").style.display = "block";
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
-    }
-
-    function copyLink() {
-      const input = document.getElementById("generatedLink");
-      input.select();
-      document.execCommand("copy");
-      alert("¡Enlace copiado!");
-    }
-  </script>
+    <script>
+        async function generateLink() {
+            const videoUrl = document.getElementById("videoUrl").value;
+            const redirectUrl = document.getElementById("redirectUrl").value;
+            
+            if (!videoUrl || !redirectUrl) {
+                alert("Por favor completa ambos campos");
+                return;
+            }
+            
+            // Validar URL de video
+            if (!videoUrl.endsWith('.mp4')) {
+                alert("La URL del video debe terminar en .mp4");
+                return;
+            }
+            
+            const id = Math.random().toString(36).substring(2, 8);
+            const shortLink = `${window.location.origin}/play/${id}`;
+            
+            try {
+                await window.dbFunctions.saveLink(id, { 
+                    videoUrl: videoUrl, 
+                    redirectUrl: redirectUrl 
+                });
+                
+                document.getElementById("generatedLink").value = shortLink;
+                document.getElementById("result").style.display = "block";
+            } catch (error) {
+                alert("Error al guardar: " + error.message);
+            }
+        }
+        
+        function copyLink() {
+            const input = document.getElementById("generatedLink");
+            input.select();
+            document.execCommand("copy");
+            alert("Enlace copiado al portapapeles");
+        }
+        
+        function newLink() {
+            document.getElementById("videoUrl").value = "";
+            document.getElementById("redirectUrl").value = "";
+            document.getElementById("result").style.display = "none";
+        }
+    </script>
 </body>
 </html>
