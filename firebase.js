@@ -13,11 +13,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 👇 Exporta las funciones correctamente
-export const dbFunctions = {
+// Funciones para exportar
+window.dbFunctions = {
   saveLink: async (id, data) => {
     await setDoc(doc(db, "links", id), data);
-    console.log("Documento guardado con ID:", id);
+    return id;
   },
   getLink: async (id) => {
     const docSnap = await getDoc(doc(db, "links", id));
