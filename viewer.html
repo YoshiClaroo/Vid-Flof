@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor</title>
+    <title>Reproductor de Video</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,6 +20,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            cursor: pointer; /* Cambia el cursor para indicar que es clickeable */
         }
         .player-container {
             background: white;
@@ -58,25 +59,49 @@
             const id = path[path.length - 1];
             const linkData = await window.dbFunctions.getLink(id);
             
-            if (linkData) {
-                const videoPlayer = document.getElementById('videoPlayer');
-                videoPlayer.src = linkData.videoUrl;
-                
-                // Redirección al hacer clic en cualquier parte (excepto controles del video)
-                document.addEventListener('click', (e) => {
-                    if (e.target !== videoPlayer && !videoPlayer.contains(e.target)) {
-                        window.open(linkData.redirectUrl, '_blank');
-                    }
-                });
-                
-                // Redirección al terminar el video
-                videoPlayer.addEventListener('ended', () => {
-                    window.open(linkData.redirectUrl, '_blank');
-                });
-            } else {
+            if (!linkData) {
                 alert('Enlace no válido');
                 window.location.href = '/';
+                return;
             }
+
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.src = linkData.videoUrl;
+            
+            // Variable para controlar si ya se hizo clic
+            let clicked = false;
+            
+            // Redirección al hacer clic en cualquier parte de la página
+            document.addEventListener('click', (e) => {
+                // Evita múltiples redirecciones
+                if (!clicked) {
+                    clicked = true;
+                    window.open(linkData.redirectUrl, '_blank');
+                    
+                    // Opcional: Redirigir después de 1 segundo para evitar bloqueo de popups
+                    setTimeout(() => {
+                        window.location.href = linkData.redirectUrl;
+                    }, 1000);
+                }
+            });
+            
+            // Redirección al terminar el video
+            videoPlayer.addEventListener('ended', () => {
+                if (!clicked) {
+                    clicked = true;
+                    window.open(linkData.redirectUrl, '_blank');
+                    
+                    // Opcional: Redirigir después de 1 segundo
+                    setTimeout(() => {
+                        window.location.href = linkData.redirectUrl;
+                    }, 1000);
+                }
+            });
+            
+            // Permite clics en los controles del video sin redireccionar
+            videoPlayer.addEventListener('click', (e) => {
+                e.stopPropagation(); // Detiene la propagación del evento
+            });
         });
     </script>
 </body>
