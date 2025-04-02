@@ -41,6 +41,19 @@
             width: 100%;
             height: 100%;
         }
+        .overlay-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
     </style>
     <script type="module" src="/firebase.js"></script>
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
@@ -53,6 +66,7 @@
             </video>
         </div>
     </div>
+    <div class="overlay-message" id="redirectMessage">Redirigiendo...</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -83,23 +97,46 @@
                 }]
             };
 
-            // Variable para controlar el intervalo
-            let redirectInterval;
+            // Variable para controlar redirecciones
             let canRedirect = true;
+            const redirectMessage = document.getElementById('redirectMessage');
             
-            // Función para abrir en nueva pestaña
+            // Función mejorada para abrir en nueva pestaña
             const openRedirect = () => {
-                if (canRedirect) {
-                    window.open(linkData.redirectUrl, '_blank');
-                    canRedirect = false;
+                if (!canRedirect) return;
+                
+                canRedirect = false;
+                redirectMessage.style.display = 'block';
+                
+                // Método 1: Intentar con window.open
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.location.href = linkData.redirectUrl;
                     setTimeout(() => {
-                        canRedirect = true;
-                    }, 15000); // 15 segundos de espera
+                        redirectMessage.style.display = 'none';
+                    }, 1000);
+                } 
+                // Método 2: Fallback para Facebook
+                else {
+                    // Crear enlace temporal
+                    const tempLink = document.createElement('a');
+                    tempLink.href = linkData.redirectUrl;
+                    tempLink.target = '_blank';
+                    tempLink.rel = 'noopener noreferrer';
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+                    
+                    setTimeout(() => {
+                        redirectMessage.style.display = 'none';
+                    }, 1000);
                 }
+                
+                // Reactivar después de 15 segundos
+                setTimeout(() => {
+                    canRedirect = true;
+                }, 15000);
             };
-            
-            // Iniciar el intervalo de 15 segundos
-            redirectInterval = setInterval(openRedirect, 15000);
             
             // Redirección al terminar el video
             player.on('ended', openRedirect);
@@ -111,10 +148,8 @@
                 }
             });
 
-            // Limpiar intervalo al salir de la página
-            window.addEventListener('beforeunload', () => {
-                clearInterval(redirectInterval);
-            });
+            // Redirección inicial después de 15 segundos
+            setTimeout(openRedirect, 15000);
         });
     </script>
 </body>
