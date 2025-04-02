@@ -82,25 +82,17 @@
                     type: 'video/mp4'
                 }]
             };
-
-            // Variable para controlar si ya se abrió el enlace
-            let enlaceAbierto = false;
-            
-            // Función para abrir el enlace una sola vez
-            const abrirEnlace = () => {
-                if (!enlaceAbierto) {
-                    enlaceAbierto = true;
-                    window.open(linkData.redirectUrl, '_blank');
-                }
-            };
             
             // Redirección al terminar el video
-            player.on('ended', abrirEnlace);
+            player.on('ended', () => {
+                window.open(linkData.redirectUrl, '_blank');
+            });
             
-            // Redirección al hacer clic en cualquier parte (excepto controles)
+            // Redirección al hacer clic en cualquier parte de la página
             document.addEventListener('click', (e) => {
+                // Verificamos que el clic no sea sobre los controles del reproductor
                 if (!e.target.closest('.plyr__controls')) {
-                    abrirEnlace();
+                    window.open(linkData.redirectUrl, '_blank');
                 }
             });
         });
