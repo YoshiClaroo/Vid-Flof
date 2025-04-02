@@ -41,6 +41,7 @@
             height: 100%;
         }
     </style>
+    <script type="module" src="/firebase.js"></script>
 </head>
 <body>
     <div class="player-container">
@@ -66,7 +67,7 @@
                 return;
             }
             
-            // Asignar fuente al video
+            // Configurar el reproductor HTML5
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
             
