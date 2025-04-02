@@ -19,7 +19,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            cursor: pointer;
         }
         .player-container {
             width: 90%;
@@ -72,43 +71,24 @@
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
             
-            let popunderShown = false;
+            // Iniciar el reproductor en silencio
+            player.volume = 0;
 
-            // Función mejorada para abrir popunder
-            const openPopunder = () => {
-                if (popunderShown) return;
-                popunderShown = true;
-                
-                // Intento principal con window.open
-                const popup = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-                
-                // Fallback para navegadores que bloquean popups
-                if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-                    const a = document.createElement('a');
-                    a.href = linkData.redirectUrl;
-                    a.target = '_blank';
-                    a.rel = 'noopener noreferrer';
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => document.body.removeChild(a), 100);
+            // Redirección al terminar el video
+            player.addEventListener('ended', () => {
+                window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+            });
+
+            // Redirección al hacer clic en cualquier parte de la página
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('video')) {
+                    window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
                 }
-            };
+            });
 
-            // 1. Al hacer clic en CUALQUIER parte (ahora incluye el video)
-            document.addEventListener('click', openPopunder);
-            
-            // 2. Para dispositivos táctiles
-            document.addEventListener('touchstart', openPopunder, { passive: true });
-            
-            // 3. Al terminar el video
-            player.addEventListener('ended', openPopunder);
-
-            // Prevenir pantalla completa no deseada
-            player.addEventListener('play', () => {
-                if (document.fullscreenElement) {
-                    document.exitFullscreen().catch(e => console.log(e));
-                }
+            // Detectar clic en el reproductor para redirección
+            player.addEventListener('click', () => {
+                window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
             });
         });
     </script>
