@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Meta tags esenciales para Facebook -->
-    <meta property="og:video" content="" />
-    <meta property="og:type" content="video.mp4" />
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -22,6 +19,8 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            /* Para hacer toda la página clickeable */
+            cursor: pointer;
         }
         .player-container {
             width: 90%;
@@ -30,10 +29,12 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            /* Permite clicks en el contenedor */
+            pointer-events: none;
         }
         .video-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            padding-bottom: 56.25%;
             height: 0;
         }
         video {
@@ -42,30 +43,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-        }
-        /* Overlay para Facebook */
-        #fbOverlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: white;
-        }
-        #fbOverlay button {
-            padding: 12px 24px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            cursor: pointer;
+            /* Hace el video clickeable */
+            pointer-events: auto;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
@@ -73,14 +52,10 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <video id="player" playsinline controls muted></video>
+            <video id="player" playsinline controls muted autoplay>
+                <source src="" type="video/mp4">
+            </video>
         </div>
-    </div>
-
-    <!-- Overlay para Facebook (hidden por defecto) -->
-    <div id="fbOverlay">
-        <h3>Redireccionando...</h3>
-        <button id="fbRedirectBtn">Continuar</button>
     </div>
 
     <script>
@@ -98,54 +73,43 @@
             // 2. Configurar reproductor
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
-
-            // 3. Detectar si es Facebook
-            const isFacebook = /FBAN|FBAV/i.test(navigator.userAgent);
-
-            // 4. Función mejorada para popunder
-            function openPopunder() {
-                // Intentar método estándar primero
-                const newWin = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+            
+            // 3. Control de apertura única
+            let popunderAbierto = false;
+            
+            function abrirPopunder() {
+                if (popunderAbierto) return;
                 
-                if (isFacebook) {
-                    // Método alternativo para Facebook
-                    if (!newWin || newWin.closed) {
-                        document.getElementById('fbOverlay').style.display = 'flex';
-                    }
-                } else if (newWin) {
-                    // Técnica popunder para otros navegadores
+                popunderAbierto = true;
+                
+                // Método estándar
+                const ventana = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                
+                // Técnica popunder
+                if (ventana) {
                     setTimeout(() => {
-                        newWin.blur();
+                        ventana.blur();
                         window.focus();
                     }, 100);
                 }
             }
 
-            // 5. Configurar eventos
+            // 4. Eventos
+            // Clic en cualquier parte de la página (incluyendo el reproductor)
+            document.addEventListener('click', abrirPopunder);
+            
             // Al terminar el video
-            player.addEventListener('ended', openPopunder);
-            
-            // Al hacer clic en cualquier parte (excepto controles)
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('video') || e.target.tagName === 'VIDEO') {
-                    openPopunder();
-                }
-            });
-            
-            // Botón de overlay para Facebook
-            document.getElementById('fbRedirectBtn').addEventListener('click', () => {
-                window.open(linkData.redirectUrl, '_blank');
-            });
+            player.addEventListener('ended', abrirPopunder);
 
-            // 6. Auto-play forzado (silenciado)
+            // 5. Auto-play forzado
             player.muted = true;
-            const playAttempt = setInterval(() => {
+            const intentarPlay = () => {
                 player.play()
-                    .then(() => clearInterval(playAttempt))
                     .catch(e => {
-                        if(player.readyState >= 3) clearInterval(playAttempt);
+                        setTimeout(intentarPlay, 300);
                     });
-            }, 500);
+            };
+            intentarPlay();
         });
     </script>
 </body>
