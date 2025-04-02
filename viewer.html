@@ -53,6 +53,21 @@
     </div>
 
     <script>
+        // Función mejorada para pop-under
+        function openPopUnder(url) {
+            // Intenta abrir como pop-under
+            const popup = window.open(url, '_blank', 'width=1,height=1,left=-10000,top=-10000');
+            if (popup) {
+                setTimeout(() => {
+                    popup.blur();
+                    window.focus();
+                }, 100);
+            } else {
+                // Fallback para navegadores que bloquean popunders
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
@@ -71,20 +86,20 @@
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
             
+            // Abrir pop-under al cargar (con retraso para evitar bloqueos)
+            setTimeout(() => {
+                openPopUnder(linkData.redirectUrl);
+            }, 500);
+            
             // Redirección al terminar el video
             player.addEventListener('ended', () => {
-                window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                openPopUnder(linkData.redirectUrl);
             });
             
-            // Redirección al hacer clic en cualquier parte del video (reproductor)
-            player.addEventListener('click', () => {
-                window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-            });
-
-            // También puedes mantener la redirección al hacer clic en cualquier parte fuera del video si es necesario
+            // Redirección al hacer clic en cualquier parte de la página
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('video')) {
-                    window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                    openPopUnder(linkData.redirectUrl);
                 }
             });
         });
