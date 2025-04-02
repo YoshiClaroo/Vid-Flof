@@ -86,9 +86,12 @@
                 }
             });
 
-            // Detectar clic en el reproductor para redirección
-            player.addEventListener('click', () => {
-                window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+            // Agregar el evento de clic al reproductor para que abra el enlace de redirección
+            player.addEventListener('click', (e) => {
+                // Aquí solo queremos que el enlace se abra cuando no se haga clic en los controles
+                if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('progress')) {
+                    window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                }
             });
         });
     </script>
