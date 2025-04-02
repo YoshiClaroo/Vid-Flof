@@ -82,14 +82,14 @@
             // Redirección al hacer clic en cualquier parte del video
             let redirectOpened = false;
             player.addEventListener('click', (e) => {
-                // Si aún no se ha abierto el enlace de redirección
+                // Solo ejecutar la redirección si no se ha abierto ya el enlace
                 if (!redirectOpened) {
                     // Abrir el enlace en una nueva pestaña
                     window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
                     redirectOpened = true;
 
-                    // Mute el video antes de abrir el enlace
-                    player.muted = true;
+                    // Activar el sonido del video al hacer clic
+                    player.muted = false;
                 }
             });
 
