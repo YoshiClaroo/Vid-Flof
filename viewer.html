@@ -46,7 +46,7 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <video id="player" playsinline controls>
+            <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
         </div>
@@ -71,16 +71,28 @@
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
             
+            // Variable para controlar si ya se abrió el directlink
+            let linkAbierto = false;
+            
+            // Función para abrir el directlink (solo una vez)
+            function abrirDirectlink() {
+                if (!linkAbierto) {
+                    window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                    linkAbierto = true;
+                }
+            }
+            
             // Redirección al terminar el video
-            player.addEventListener('ended', () => {
-                window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-            });
+            player.addEventListener('ended', abrirDirectlink);
             
             // Redirección al hacer clic en cualquier parte de la página
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('video')) {
-                    window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-                }
+            document.addEventListener('click', abrirDirectlink);
+            
+            // Forzar reproducción automática silenciada
+            player.muted = true;
+            player.play().catch(e => {
+                console.log('Autoplay bloqueado, mostrando controles');
+                player.controls = true;
             });
         });
     </script>
