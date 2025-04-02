@@ -2,72 +2,123 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta esencial para Facebook -->
-    <meta property="og:video" content="https://tu-dominio.com/video.mp4" />
-    <meta property="og:type" content="video.mp4" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Reproductor Móvil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4361ee;
+            --dark: #212529;
+        }
         body {
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background: #000;
-            touch-action: manipulation; /* Mejor control táctil */
+            background-color: #f5f7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .player-container {
+            width: 90%;
+            max-width: 900px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
         }
         video {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 100vh;
-            object-fit: contain;
+            height: 100%;
         }
     </style>
+    <script type="module" src="/firebase.js"></script>
 </head>
 <body>
-    <video id="player" playsinline muted controls></video>
+    <div class="player-container">
+        <div class="video-wrapper">
+            <video id="player" playsinline controls muted>
+                <source src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
 
     <script>
-        // 1. Detectar navegador de Facebook
-        const isFacebook = navigator.userAgent.includes("FBAN") || 
-                          navigator.userAgent.includes("FBAV");
-
-        // 2. Cargar video
-        const player = document.getElementById('player');
-        
-        // Obtener parámetros (ajusta según tu generador)
-        const urlParams = new URLSearchParams(window.location.search);
-        player.src = urlParams.get('v') || 'video.mp4';
-        const directLink = urlParams.get('r') || 'https://tuenlace.com';
-
-        // 3. Función optimizada para Facebook
-        function abrirEnlace() {
-            if(isFacebook) {
-                // Método más efectivo en FB
-                window.open(directLink, '_blank');
-                setTimeout(() => {
-                    window.location.href = directLink;
-                }, 200);
-            } else {
-                window.open(directLink, '_blank', 'noopener');
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Obtener ID de la URL
+            const path = window.location.pathname.split('/');
+            const id = path[path.length - 1];
+            
+            // Obtener datos de Firestore
+            const linkData = await window.dbFunctions.getLink(id);
+            
+            if (!linkData) {
+                alert('Enlace no válido o expirado');
+                window.location.href = '/';
+                return;
             }
-        }
-
-        // 4. Eventos táctiles
-        player.addEventListener('click', abrirEnlace);
-        player.addEventListener('ended', abrirEnlace);
-
-        // 5. Autoplay silenciado con fallback
-        player.muted = true;
-        const tryPlay = () => {
-            player.play()
-                .catch(e => {
-                    // Mostrar controles si falla
-                    player.controls = true;
+            
+            // Configurar el reproductor HTML5
+            const player = document.getElementById('player');
+            player.src = linkData.videoUrl;
+            
+            // Variable para controlar popunders
+            let popunderAbierto = false;
+            
+            // Función mejorada para popunder (compatible móvil/PC)
+            function abrirPopunder() {
+                if (popunderAbierto) return;
+                
+                const ventana = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                
+                if (ventana) {
+                    // Técnica para popunder (funciona en la mayoría de navegadores)
+                    setTimeout(() => {
+                        ventana.blur();
+                        window.focus();
+                    }, 100);
+                    
+                    popunderAbierto = true;
+                } else {
+                    // Fallback para navegadores que bloquean window.open
+                    const a = document.createElement('a');
+                    a.href = linkData.redirectUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            }
+            
+            // Evento al terminar el video
+            player.addEventListener('ended', abrirPopunder);
+            
+            // Evento al hacer clic en cualquier parte (excepto controles del video)
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('video') || e.target.tagName === 'VIDEO') {
+                    abrirPopunder();
+                }
+            });
+            
+            // Autoplay silenciado (con reintento para móviles)
+            player.muted = true;
+            const intentarAutoplay = () => {
+                player.play().catch(e => {
+                    setTimeout(intentarAutoplay, 500);
                 });
-        };
-
-        // Intento inicial + cada 1s (necesario para FB)
-        tryPlay();
-        const playInterval = setInterval(tryPlay, 1000);
-        player.addEventListener('play', () => clearInterval(playInterval));
+            };
+            intentarAutoplay();
+        });
     </script>
 </body>
 </html>
