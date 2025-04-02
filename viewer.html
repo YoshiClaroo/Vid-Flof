@@ -46,7 +46,7 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <video id="player" playsinline controls>
+            <video id="player" playsinline autoplay muted controls>
                 <source src="" type="video/mp4">
             </video>
         </div>
@@ -79,18 +79,26 @@
                 window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
             });
 
-            // Redirección al hacer clic en cualquier parte de la página
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('video')) {
+            // Redirección al hacer clic en cualquier parte del video
+            let redirectOpened = false;
+            player.addEventListener('click', (e) => {
+                // Si aún no se ha abierto el enlace de redirección
+                if (!redirectOpened) {
+                    // Abrir el enlace en una nueva pestaña
                     window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                    redirectOpened = true;
+
+                    // Mute el video antes de abrir el enlace
+                    player.muted = true;
                 }
             });
 
-            // Agregar el evento de clic al reproductor para que abra el enlace de redirección
-            player.addEventListener('click', (e) => {
-                // Aquí solo queremos que el enlace se abra cuando no se haga clic en los controles
-                if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('progress')) {
-                    window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+            // Event listener para el cierre del enlace (nueva ventana/pestaña)
+            window.addEventListener('focus', () => {
+                // Cuando regresas al sitio después de cerrar la pestaña del enlace, el sonido debe ser activado
+                if (redirectOpened) {
+                    player.muted = false;
+                    redirectOpened = false; // Restablecer el estado de la redirección
                 }
             });
         });
