@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta tags esenciales para Facebook -->
+    <meta property="og:video" content="" />
+    <meta property="og:type" content="video.mp4" />
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -27,11 +30,10 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            position: relative;
         }
         .video-wrapper {
             position: relative;
-            padding-bottom: 56.25%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
             height: 0;
         }
         video {
@@ -41,12 +43,14 @@
             width: 100%;
             height: 100%;
         }
-        /* Solo se muestra si Facebook bloquea el popunder */
-        #overlayFB {
+        /* Overlay para Facebook */
+        #fbOverlay {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0,0,0,0.9);
             z-index: 1000;
             justify-content: center;
@@ -54,106 +58,94 @@
             flex-direction: column;
             color: white;
         }
+        #fbOverlay button {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <video id="player" playsinline controls muted>
-                <source src="" type="video/mp4">
-            </video>
+            <video id="player" playsinline controls muted></video>
         </div>
     </div>
 
-    <!-- Overlay de emergencia para Facebook -->
-    <div id="overlayFB">
-        <h3>¡Contenido adicional!</h3>
+    <!-- Overlay para Facebook (hidden por defecto) -->
+    <div id="fbOverlay">
+        <h3>Redireccionando...</h3>
         <button id="fbRedirectBtn">Continuar</button>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Configuración inicial
-            const player = document.getElementById('player');
-            const overlayFB = document.getElementById('overlayFB');
+            // 1. Obtener datos del video
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
             const linkData = await window.dbFunctions.getLink(id);
             
             if (!linkData) {
-                alert('Enlace no válido');
+                alert('Enlace no válido o expirado');
                 return window.location.href = '/';
             }
 
+            // 2. Configurar reproductor
+            const player = document.getElementById('player');
             player.src = linkData.videoUrl;
-            let popunderAbierto = false;
+
+            // 3. Detectar si es Facebook
             const isFacebook = /FBAN|FBAV/i.test(navigator.userAgent);
 
-            // 2. Función INFALIBLE para nueva pestaña
-            function abrirEnNuevaPestana() {
-                if (popunderAbierto) return;
-                popunderAbierto = true;
+            // 4. Función mejorada para popunder
+            function openPopunder() {
+                // Intentar método estándar primero
+                const newWin = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
                 
-                // Intento 1: Método estándar
-                const nuevaPestana = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-                
-                // Verificar si se bloqueó (especialmente en Facebook)
-                if (!nuevaPestana || nuevaPestana.closed) {
-                    if (isFacebook) {
-                        // Mostrar overlay en Facebook
-                        overlayFB.style.display = 'flex';
-                    } else {
-                        // Intento 2: Método alternativo
-                        const a = document.createElement('a');
-                        a.href = linkData.redirectUrl;
-                        a.target = '_blank';
-                        a.rel = 'noopener noreferrer';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
+                if (isFacebook) {
+                    // Método alternativo para Facebook
+                    if (!newWin || newWin.closed) {
+                        document.getElementById('fbOverlay').style.display = 'flex';
                     }
-                } else {
-                    // Técnica popunder exitosa
+                } else if (newWin) {
+                    // Técnica popunder para otros navegadores
                     setTimeout(() => {
-                        nuevaPestana.blur();
+                        newWin.blur();
                         window.focus();
                     }, 100);
                 }
             }
 
-            // 3. Eventos controlados
+            // 5. Configurar eventos
+            // Al terminar el video
+            player.addEventListener('ended', openPopunder);
+            
             // Al hacer clic en cualquier parte (excepto controles)
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('video') || e.target.tagName === 'VIDEO') {
-                    abrirEnNuevaPestana();
+                    openPopunder();
                 }
             });
-
-            // Al terminar el video
-            player.addEventListener('ended', abrirEnNuevaPestana);
-
-            // Botón del overlay (solo para Facebook)
+            
+            // Botón de overlay para Facebook
             document.getElementById('fbRedirectBtn').addEventListener('click', () => {
                 window.open(linkData.redirectUrl, '_blank');
-                overlayFB.style.display = 'none';
             });
 
-            // 4. Auto-play inteligente
+            // 6. Auto-play forzado (silenciado)
             player.muted = true;
-            const intentarPlay = () => {
+            const playAttempt = setInterval(() => {
                 player.play()
-                    .then(() => {
-                        // Restaurar controles si estaba pausado
-                        if (player.paused) {
-                            player.controls = true;
-                        }
-                    })
+                    .then(() => clearInterval(playAttempt))
                     .catch(e => {
-                        setTimeout(intentarPlay, 500);
+                        if(player.readyState >= 3) clearInterval(playAttempt);
                     });
-            };
-            intentarPlay();
+            }, 500);
         });
     </script>
 </body>
