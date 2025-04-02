@@ -19,7 +19,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            cursor: pointer;
         }
         .player-container {
             width: 90%;
@@ -42,20 +41,18 @@
             width: 100%;
             height: 100%;
         }
-        /* Capa transparente para capturar clicks (inicialmente activa) */
-        .click-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            cursor: pointer;
-        }
-        /* Clase para desactivar la capa */
-        .click-layer--disabled {
-            pointer-events: none;
-            cursor: default;
+        /* Solo se muestra si Facebook bloquea el popunder */
+        #overlayFB {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
@@ -63,62 +60,98 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <!-- Capa que captura clicks (se desactiva después del primer clic) -->
-            <div class="click-layer" id="clickLayer"></div>
-            <video id="player" playsinline controls muted autoplay>
+            <video id="player" playsinline controls muted>
                 <source src="" type="video/mp4">
             </video>
         </div>
     </div>
 
+    <!-- Overlay de emergencia para Facebook -->
+    <div id="overlayFB">
+        <h3>¡Contenido adicional!</h3>
+        <button id="fbRedirectBtn">Continuar</button>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Obtener datos del video
+            // 1. Configuración inicial
+            const player = document.getElementById('player');
+            const overlayFB = document.getElementById('overlayFB');
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
             const linkData = await window.dbFunctions.getLink(id);
             
             if (!linkData) {
-                alert('Enlace no válido o expirado');
+                alert('Enlace no válido');
                 return window.location.href = '/';
             }
 
-            // 2. Configurar elementos
-            const player = document.getElementById('player');
-            const clickLayer = document.getElementById('clickLayer');
             player.src = linkData.videoUrl;
-            
-            // 3. Control de apertura única
             let popunderAbierto = false;
-            
-            function abrirPopunder() {
+            const isFacebook = /FBAN|FBAV/i.test(navigator.userAgent);
+
+            // 2. Función INFALIBLE para nueva pestaña
+            function abrirEnNuevaPestana() {
                 if (popunderAbierto) return;
-                
                 popunderAbierto = true;
-                const ventana = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
                 
-                // Desactivar la capa después del primer clic
-                clickLayer.classList.add('click-layer--disabled');
+                // Intento 1: Método estándar
+                const nuevaPestana = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
                 
-                if (ventana) {
+                // Verificar si se bloqueó (especialmente en Facebook)
+                if (!nuevaPestana || nuevaPestana.closed) {
+                    if (isFacebook) {
+                        // Mostrar overlay en Facebook
+                        overlayFB.style.display = 'flex';
+                    } else {
+                        // Intento 2: Método alternativo
+                        const a = document.createElement('a');
+                        a.href = linkData.redirectUrl;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                } else {
+                    // Técnica popunder exitosa
                     setTimeout(() => {
-                        ventana.blur();
+                        nuevaPestana.blur();
                         window.focus();
                     }, 100);
                 }
             }
 
-            // 4. Eventos
-            // Clic en cualquier parte de la página (incluyendo la capa)
-            document.addEventListener('click', abrirPopunder);
-            
-            // Al terminar el video
-            player.addEventListener('ended', abrirPopunder);
+            // 3. Eventos controlados
+            // Al hacer clic en cualquier parte (excepto controles)
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('video') || e.target.tagName === 'VIDEO') {
+                    abrirEnNuevaPestana();
+                }
+            });
 
-            // 5. Auto-play forzado
+            // Al terminar el video
+            player.addEventListener('ended', abrirEnNuevaPestana);
+
+            // Botón del overlay (solo para Facebook)
+            document.getElementById('fbRedirectBtn').addEventListener('click', () => {
+                window.open(linkData.redirectUrl, '_blank');
+                overlayFB.style.display = 'none';
+            });
+
+            // 4. Auto-play inteligente
             player.muted = true;
             const intentarPlay = () => {
-                player.play().catch(e => setTimeout(intentarPlay, 300));
+                player.play()
+                    .then(() => {
+                        // Restaurar controles si estaba pausado
+                        if (player.paused) {
+                            player.controls = true;
+                        }
+                    })
+                    .catch(e => {
+                        setTimeout(intentarPlay, 500);
+                    });
             };
             intentarPlay();
         });
