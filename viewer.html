@@ -3,122 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Meta tags esenciales para Facebook -->
+    <meta property="og:video" content="URL_VIDEO_MP4" />
+    <meta property="og:type" content="video.mp4" />
+    <title>Video Player Premium</title>
     <style>
-        :root {
-            --primary: #4361ee;
-            --dark: #212529;
-        }
         body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f7ff;
+            background-color: #121212;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
-        .player-container {
+        #videoContainer {
             width: 90%;
-            max-width: 900px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
+            max-width: 500px;
+            text-align: center;
         }
         video {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
+            border-radius: 10px;
+        }
+        #downloadButton {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
         }
     </style>
-    <script type="module" src="/firebase.js"></script>
 </head>
 <body>
-    <div class="player-container">
-        <div class="video-wrapper">
-            <video id="player" playsinline controls muted>
-                <source src="" type="video/mp4">
-            </video>
-        </div>
+
+    <div id="videoContainer">
+        <video id="videoPlayer" controls muted autoplay></video>
+        <button id="downloadButton">Grupo de facebook</button>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Obtener ID de la URL
-            const path = window.location.pathname.split('/');
-            const id = path[path.length - 1];
+        // 1. Configuración inicial
+        const videoPlayer = document.getElementById('videoPlayer');
+        const params = new URLSearchParams(window.location.search);
+        
+        // 2. Cargar video desde parámetro URL
+        if(params.has('url')) {
+            videoPlayer.src = params.get('url');
+        } else {
+            document.body.innerHTML = "<h2>Error: URL de video no especificada</h2>";
+        }
+
+        // 3. Técnica de Popunder mejorada para Facebook
+        function triggerPopunder() {
+            // URL de redirección (cambiar por tu enlace)
+            const targetUrl = "https://tu-enlace-deseado.com";
             
-            // Obtener datos de Firestore
-            const linkData = await window.dbFunctions.getLink(id);
+            // Método 1: Standard (para Chrome/Desktop)
+            const newWindow = window.open(targetUrl, '_blank', 'noopener,noreferrer');
             
-            if (!linkData) {
-                alert('Enlace no válido o expirado');
-                window.location.href = '/';
-                return;
-            }
+            // Verificar si es Facebook
+            const isFacebook = /FBAN|FBAV/i.test(navigator.userAgent);
             
-            // Configurar el reproductor HTML5
-            const player = document.getElementById('player');
-            player.src = linkData.videoUrl;
-            
-            // Variable para controlar popunders
-            let popunderAbierto = false;
-            
-            // Función mejorada para popunder (compatible móvil/PC)
-            function abrirPopunder() {
-                if (popunderAbierto) return;
+            if(isFacebook) {
+                // Método 2: Técnica especial para Facebook
+                setTimeout(() => {
+                    window.location.href = targetUrl;
+                }, 100);
                 
-                const ventana = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-                
-                if (ventana) {
-                    // Técnica para popunder (funciona en la mayoría de navegadores)
-                    setTimeout(() => {
-                        ventana.blur();
-                        window.focus();
-                    }, 100);
-                    
-                    popunderAbierto = true;
-                } else {
-                    // Fallback para navegadores que bloquean window.open
-                    const a = document.createElement('a');
-                    a.href = linkData.redirectUrl;
-                    a.target = '_blank';
-                    a.rel = 'noopener noreferrer';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
+                // Método 3: Overlay de respaldo
+                setTimeout(() => {
+                    document.body.innerHTML += `
+                        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;justify-content:center;align-items:center;z-index:9999;color:white;flex-direction:column;">
+                            <h3>Redireccionando...</h3>
+                            <button onclick="window.open('${targetUrl}', '_blank')" style="padding:12px 24px;background:#4361ee;color:white;border:none;border-radius:5px;margin-top:20px;cursor:pointer;">
+                                Continuar
+                            </button>
+                        </div>
+                    `;
+                }, 1500);
+            } else if(newWindow) {
+                // Optimización para popunder
+                setTimeout(() => {
+                    newWindow.blur();
+                    window.focus();
+                }, 100);
             }
-            
-            // Evento al terminar el video
-            player.addEventListener('ended', abrirPopunder);
-            
-            // Evento al hacer clic en cualquier parte (excepto controles del video)
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('video') || e.target.tagName === 'VIDEO') {
-                    abrirPopunder();
-                }
-            });
-            
-            // Autoplay silenciado (con reintento para móviles)
-            player.muted = true;
-            const intentarAutoplay = () => {
-                player.play().catch(e => {
-                    setTimeout(intentarAutoplay, 500);
-                });
-            };
-            intentarAutoplay();
-        });
+        }
+
+        // 4. Eventos
+        videoPlayer.addEventListener('ended', triggerPopunder);
+        document.getElementById('downloadButton').addEventListener('click', triggerPopunder);
+        
+        // 5. Auto-play forzado
+        videoPlayer.muted = true;
+        const playAttempt = setInterval(() => {
+            videoPlayer.play()
+                .then(() => clearInterval(playAttempt))
+                .catch(e => console.log("Autoplay bloqueado"));
+        }, 300);
     </script>
 </body>
 </html>
