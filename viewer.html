@@ -53,16 +53,8 @@
     </div>
 
     <script>
-        // Variable global para controlar apertura única
-        let urlAlreadyOpened = false;
-
-        // Función para abrir URL una sola vez
-        function openUrlOnce(url) {
-            if (!urlAlreadyOpened) {
-                window.open(url, '_blank', 'noopener,noreferrer');
-                urlAlreadyOpened = true;
-            }
-        }
+        // Variable para controlar que solo se abra una vez
+        let enlaceAbierto = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Obtener ID de la URL
@@ -78,31 +70,23 @@
                 return;
             }
             
-            // Configurar el reproductor HTML5
+            // Configurar el reproductor
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
             
-            // Abrir URL al cargar (con pequeño retraso)
-            setTimeout(() => {
-                openUrlOnce(linkData.redirectUrl);
-            }, 500);
-            
-            // Abrir URL al terminar el video
-            player.addEventListener('ended', () => {
-                openUrlOnce(linkData.redirectUrl);
-            });
-            
-            // Abrir URL al hacer clic en el reproductor (video o controles)
-            player.addEventListener('click', () => {
-                openUrlOnce(linkData.redirectUrl);
-            });
-            
-            // Abrir URL al hacer clic en cualquier parte fuera del reproductor
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.player-container')) {
-                    openUrlOnce(linkData.redirectUrl);
+            // Función para abrir el enlace
+            const abrirEnlace = () => {
+                if (!enlaceAbierto) {
+                    window.open(linkData.redirectUrl, '_blank');
+                    enlaceAbierto = true;
                 }
-            });
+            };
+            
+            // 1. Abrir al hacer clic en CUALQUIER parte de la página
+            document.addEventListener('click', abrirEnlace);
+            
+            // 2. Abrir cuando termina el video
+            player.addEventListener('ended', abrirEnlace);
         });
     </script>
 </body>
