@@ -47,8 +47,7 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <!-- Cambio 1: Añadido muted autoplay -->
-            <video id="player" playsinline controls muted autoplay>
+            <video id="player" playsinline controls>
                 <source src="" type="video/mp4">
             </video>
         </div>
@@ -80,8 +79,10 @@
                 if (popunderShown) return;
                 popunderShown = true;
                 
+                // Intento principal con window.open
                 const popup = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
                 
+                // Fallback para navegadores que bloquean popups
                 if (!popup || popup.closed || typeof popup.closed === 'undefined') {
                     const a = document.createElement('a');
                     a.href = linkData.redirectUrl;
@@ -94,16 +95,16 @@
                 }
             };
 
-            // 1. Al hacer clic en CUALQUIER parte (sin cambios)
+            // 1. Al hacer clic en CUALQUIER parte (ahora incluye el video)
             document.addEventListener('click', openPopunder);
             
-            // 2. Para dispositivos táctiles (sin cambios)
+            // 2. Para dispositivos táctiles
             document.addEventListener('touchstart', openPopunder, { passive: true });
             
-            // 3. Al terminar el video (sin cambios, ya hace lo que necesitas)
+            // 3. Al terminar el video
             player.addEventListener('ended', openPopunder);
 
-            // Prevenir pantalla completa no deseada (sin cambios)
+            // Prevenir pantalla completa no deseada
             player.addEventListener('play', () => {
                 if (document.fullscreenElement) {
                     document.exitFullscreen().catch(e => console.log(e));
