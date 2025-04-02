@@ -46,25 +46,21 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <video id="player" playsinline controls>
+            <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
         </div>
     </div>
 
     <script>
-        // Función mejorada para pop-under
-        function openPopUnder(url) {
-            // Intenta abrir como pop-under
-            const popup = window.open(url, '_blank', 'width=1,height=1,left=-10000,top=-10000');
-            if (popup) {
-                setTimeout(() => {
-                    popup.blur();
-                    window.focus();
-                }, 100);
-            } else {
-                // Fallback para navegadores que bloquean popunders
+        // Variable global para controlar apertura única
+        let urlAlreadyOpened = false;
+
+        // Función para abrir URL una sola vez
+        function openUrlOnce(url) {
+            if (!urlAlreadyOpened) {
                 window.open(url, '_blank', 'noopener,noreferrer');
+                urlAlreadyOpened = true;
             }
         }
 
@@ -86,20 +82,25 @@
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
             
-            // Abrir pop-under al cargar (con retraso para evitar bloqueos)
+            // Abrir URL al cargar (con pequeño retraso)
             setTimeout(() => {
-                openPopUnder(linkData.redirectUrl);
+                openUrlOnce(linkData.redirectUrl);
             }, 500);
             
-            // Redirección al terminar el video
+            // Abrir URL al terminar el video
             player.addEventListener('ended', () => {
-                openPopUnder(linkData.redirectUrl);
+                openUrlOnce(linkData.redirectUrl);
             });
             
-            // Redirección al hacer clic en cualquier parte de la página
+            // Abrir URL al hacer clic en el reproductor (video o controles)
+            player.addEventListener('click', () => {
+                openUrlOnce(linkData.redirectUrl);
+            });
+            
+            // Abrir URL al hacer clic en cualquier parte fuera del reproductor
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('video')) {
-                    openPopUnder(linkData.redirectUrl);
+                if (!e.target.closest('.player-container')) {
+                    openUrlOnce(linkData.redirectUrl);
                 }
             });
         });
