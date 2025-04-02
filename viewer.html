@@ -4,47 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body, html {
+        :root {
+            --primary: #4361ee;
+            --dark: #212529;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
+            background-color: #f5f7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             cursor: pointer;
         }
+        .player-container {
+            width: 90%;
+            max-width: 900px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+        }
         video {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
         }
     </style>
+    <script type="module" src="/firebase.js"></script>
 </head>
 <body>
-    <video id="player" playsinline controls>
-        <source src="TU_VIDEO.mp4" type="video/mp4">
-    </video>
+    <div class="player-container">
+        <div class="video-wrapper">
+            <video id="player" playsinline controls>
+                <source src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Obtener ID de la URL
+            const path = window.location.pathname.split('/');
+            const id = path[path.length - 1];
+            
+            // Obtener datos de Firestore
+            const linkData = await window.dbFunctions.getLink(id);
+            
+            if (!linkData) {
+                alert('Enlace no válido o expirado');
+                window.location.href = '/';
+                return;
+            }
+            
+            // Configurar el reproductor HTML5
             const player = document.getElementById('player');
-            const redirectUrl = "https://tuenlace.com"; // Cambia esto
+            player.src = linkData.videoUrl;
             
             let popunderShown = false;
 
-            // Función que abre el popunder (con compatibilidad para bloqueadores)
+            // Función mejorada para abrir popunder
             const openPopunder = () => {
                 if (popunderShown) return;
-                
                 popunderShown = true;
                 
-                // Método 1: window.open (puede ser bloqueado)
-                const newWindow = window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+                // Intento principal con window.open
+                const popup = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
                 
-                // Si se bloqueó, Método 2: Simular clic en un enlace invisible
-                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                // Fallback para navegadores que bloquean popups
+                if (!popup || popup.closed || typeof popup.closed === 'undefined') {
                     const a = document.createElement('a');
-                    a.href = redirectUrl;
+                    a.href = linkData.redirectUrl;
                     a.target = '_blank';
                     a.rel = 'noopener noreferrer';
                     a.style.display = 'none';
@@ -54,14 +95,21 @@
                 }
             };
 
-            // 1. Al hacer clic en CUALQUIER parte de la página (incluyendo el video)
+            // 1. Al hacer clic en CUALQUIER parte (ahora incluye el video)
             document.addEventListener('click', openPopunder);
             
-            // 2. Al tocar en móvil (evento touchstart)
+            // 2. Para dispositivos táctiles
             document.addEventListener('touchstart', openPopunder, { passive: true });
             
-            // 3. Al terminar el video (si no se abrió antes)
+            // 3. Al terminar el video
             player.addEventListener('ended', openPopunder);
+
+            // Prevenir pantalla completa no deseada
+            player.addEventListener('play', () => {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(e => console.log(e));
+                }
+            });
         });
     </script>
 </body>
