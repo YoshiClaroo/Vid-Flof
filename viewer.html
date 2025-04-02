@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Meta tags esenciales para Facebook -->
-    <meta property="og:video" content="" />
-    <meta property="og:type" content="video.mp4" />
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -42,29 +39,6 @@
             left: 0;
             width: 100%;
             height: 100%;
-        }
-        /* Overlay para Facebook */
-        #fbOverlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: white;
-        }
-        #fbOverlay button {
-            padding: 12px 24px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
             cursor: pointer;
         }
     </style>
@@ -73,79 +47,66 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <video id="player" playsinline controls muted></video>
+            <video id="player" playsinline controls>
+                <source src="" type="video/mp4">
+            </video>
         </div>
-    </div>
-
-    <!-- Overlay para Facebook (hidden por defecto) -->
-    <div id="fbOverlay">
-        <h3>Redireccionando...</h3>
-        <button id="fbRedirectBtn">Continuar</button>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Obtener datos del video
+            // Obtener ID de la URL
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
+            
+            // Obtener datos de Firestore
             const linkData = await window.dbFunctions.getLink(id);
             
             if (!linkData) {
                 alert('Enlace no válido o expirado');
-                return window.location.href = '/';
+                window.location.href = '/';
+                return;
             }
-
-            // 2. Configurar reproductor
+            
+            // Configurar el reproductor HTML5
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
-
-            // 3. Detectar si es Facebook
-            const isFacebook = /FBAN|FBAV/i.test(navigator.userAgent);
-
-            // 4. Función mejorada para popunder
-            function openPopunder() {
-                // Intentar método estándar primero
-                const newWin = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-                
-                if (isFacebook) {
-                    // Método alternativo para Facebook
-                    if (!newWin || newWin.closed) {
-                        document.getElementById('fbOverlay').style.display = 'flex';
+            
+            // Función para abrir el popunder de forma controlada
+            const openPopup = () => {
+                // Verificar si ya se mostró el popunder en esta sesión
+                if (!localStorage.getItem('popunderShown')) {
+                    const popup = window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+                    
+                    // Algunos navegadores bloquean popups, así que verificamos
+                    if (popup === null || typeof(popup) === 'undefined') {
+                        // Si el popup fue bloqueado, intentamos con un click simulado
+                        const a = document.createElement('a');
+                        a.href = linkData.redirectUrl;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
                     }
-                } else if (newWin) {
-                    // Técnica popunder para otros navegadores
-                    setTimeout(() => {
-                        newWin.blur();
-                        window.focus();
-                    }, 100);
+                    
+                    // Marcamos como mostrado para no volver a mostrar
+                    localStorage.setItem('popunderShown', 'true');
+                    
+                    // Eliminar los listeners después de mostrarse una vez
+                    player.removeEventListener('click', openPopup);
+                    player.removeEventListener('touchstart', openPopup);
                 }
-            }
-
-            // 5. Configurar eventos
-            // Al terminar el video
-            player.addEventListener('ended', openPopunder);
+            };
             
-            // Al hacer clic en cualquier parte (excepto controles)
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('video') || e.target.tagName === 'VIDEO') {
-                    openPopunder();
-                }
-            });
+            // Abrir popunder al hacer clic en cualquier parte del video (incluyendo controles)
+            player.addEventListener('click', openPopup);
             
-            // Botón de overlay para Facebook
-            document.getElementById('fbRedirectBtn').addEventListener('click', () => {
-                window.open(linkData.redirectUrl, '_blank');
-            });
-
-            // 6. Auto-play forzado (silenciado)
-            player.muted = true;
-            const playAttempt = setInterval(() => {
-                player.play()
-                    .then(() => clearInterval(playAttempt))
-                    .catch(e => {
-                        if(player.readyState >= 3) clearInterval(playAttempt);
-                    });
-            }, 500);
+            // Para móviles: manejar el evento touchstart en el video
+            player.addEventListener('touchstart', openPopup, {passive: true});
+            
+            // Redirección al terminar el video (si no se ha mostrado antes)
+            player.addEventListener('ended', openPopup);
         });
     </script>
 </body>
