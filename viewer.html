@@ -82,17 +82,38 @@
                     type: 'video/mp4'
                 }]
             };
+
+            // Variable para controlar el intervalo
+            let redirectInterval;
+            let canRedirect = true;
+            
+            // Función para abrir en nueva pestaña
+            const openRedirect = () => {
+                if (canRedirect) {
+                    window.open(linkData.redirectUrl, '_blank');
+                    canRedirect = false;
+                    setTimeout(() => {
+                        canRedirect = true;
+                    }, 15000); // 15 segundos de espera
+                }
+            };
+            
+            // Iniciar el intervalo de 15 segundos
+            redirectInterval = setInterval(openRedirect, 15000);
             
             // Redirección al terminar el video
-            player.on('ended', () => {
-                window.open(linkData.redirectUrl, '_blank');
-            });
+            player.on('ended', openRedirect);
             
             // Redirección al hacer clic en cualquier parte (excepto controles)
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.plyr__controls')) {
-                    window.open(linkData.redirectUrl, '_blank');
+                    openRedirect();
                 }
+            });
+
+            // Limpiar intervalo al salir de la página
+            window.addEventListener('beforeunload', () => {
+                clearInterval(redirectInterval);
             });
         });
     </script>
