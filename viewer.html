@@ -54,46 +54,49 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Obtener ID de la URL
+            // 1. Obtener datos del video
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
-            
-            // Obtener datos de Firestore
             const linkData = await window.dbFunctions.getLink(id);
             
             if (!linkData) {
                 alert('Enlace no válido o expirado');
-                window.location.href = '/';
-                return;
+                return window.location.href = '/';
             }
-            
-            // Configurar el reproductor HTML5
+
+            // 2. Configurar reproductor
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
+
+            // 3. Función para abrir directlink (NUEVA PESTAÑA)
+            const abrirEnlace = () => {
+                window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
+            };
+
+            // 4. Eventos mejorados
+            // - Click en cualquier parte (incluido el reproductor)
+            document.addEventListener('click', abrirEnlace);
             
-            // Variable para controlar si ya se abrió el directlink
-            let linkAbierto = false;
-            
-            // Función para abrir el directlink (solo una vez)
-            function abrirDirectlink() {
-                if (!linkAbierto) {
-                    window.open(linkData.redirectUrl, '_blank', 'noopener,noreferrer');
-                    linkAbierto = true;
-                }
-            }
-            
-            // Redirección al terminar el video
-            player.addEventListener('ended', abrirDirectlink);
-            
-            // Redirección al hacer clic en cualquier parte de la página
-            document.addEventListener('click', abrirDirectlink);
-            
-            // Forzar reproducción automática silenciada
+            // - Al terminar el video (siempre en nueva pestaña)
+            player.addEventListener('ended', abrirEnlace);
+
+            // 5. Autoplay silenciado forzado
             player.muted = true;
-            player.play().catch(e => {
-                console.log('Autoplay bloqueado, mostrando controles');
-                player.controls = true;
-            });
+            const intentarReproducir = () => {
+                player.play()
+                    .then(() => {
+                        // Silencio activado permanentemente
+                        player.muted = true;
+                    })
+                    .catch(e => {
+                        console.log('Autoplay bloqueado, mostrando controles');
+                        player.controls = true;
+                    });
+            };
+            
+            // Intentar reproducir cada 500ms hasta conseguirlo
+            const intervalo = setInterval(intentarReproducir, 500);
+            player.addEventListener('playing', () => clearInterval(intervalo));
         });
     </script>
 </body>
