@@ -63,47 +63,33 @@
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
-            
+
             // Obtener datos de Firestore
             const linkData = await window.dbFunctions.getLink(id);
-            
+
             if (!linkData) {
                 alert('Enlace no válido o expirado');
                 window.location.href = '/';
                 return;
             }
-            
+
             // Configurar el reproductor HTML5
             const player = document.getElementById('player');
             player.src = linkData.videoUrl;
-            
-            // Variable para controlar el intervalo
-            let intervalo;
-            
-            // Función para abrir el enlace
+
+            // Función para abrir el enlace en una nueva pestaña
             const abrirEnlace = () => {
                 window.open(linkData.redirectUrl, '_blank');
             };
-            
-            // Iniciar intervalo cada 10 segundos
-            const iniciarIntervalo = () => {
-                intervalo = setInterval(abrirEnlace, 10000); // 10 segundos
-            };
-            
-            // 1. Abrir inmediatamente al cargar
-            abrirEnlace();
-            
-            // 2. Iniciar el intervalo de 10 segundos
-            iniciarIntervalo();
-            
-            // 3. Abrir al hacer clic en cualquier parte
-            document.addEventListener('click', abrirEnlace);
-            
-            // 4. Abrir al finalizar el video
-            player.addEventListener('ended', () => {
-                abrirEnlace();
-                clearInterval(intervalo); // Detener intervalo al finalizar
-            });
+
+            // 1. Abrir cuando el usuario hace clic en cualquier parte de la página
+            document.addEventListener('click', abrirEnlace, { once: true });
+
+            // 2. Abrir cuando el usuario haga clic en el reproductor
+            player.addEventListener('click', abrirEnlace, { once: true });
+
+            // 3. Abrir cuando el video finaliza
+            player.addEventListener('ended', abrirEnlace);
         });
     </script>
 
@@ -124,4 +110,4 @@
     <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4941568&101" alt="contador" border="0"></a></noscript>
     <!-- Histats.com END -->
 </body>
-                                              </html>
+</html>
