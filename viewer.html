@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
+    <title>Video Player Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
     <style>
@@ -36,11 +36,15 @@
             width: 100%;
             border-radius: 12px;
         }
-        #histats_counter {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            z-index: 1000;
+        /* ESTO OCULTA HISTATS SIN AFECTAR TU CÓDIGO */
+        #histats_counter, #histats_counter * {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
@@ -48,7 +52,6 @@
 <body>
     <div class="player-container">
         <div class="video-wrapper">
-            <!-- Video con autoplay y mute activados -->
             <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
@@ -58,11 +61,9 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Obtener ID de la URL
+            // 1. Configuración inicial
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
-
-            // Obtener datos de Firestore
             const linkData = await window.dbFunctions.getLink(id);
 
             if (!linkData) {
@@ -71,71 +72,75 @@
                 return;
             }
 
-            // Configurar el reproductor con Plyr
+            // 2. Reproductor con autoplay en mute
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
-            
-            // Inicializar Plyr con configuración para autoplay
             const player = new Plyr(playerElement, {
                 autoplay: true,
                 muted: true,
-                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+                hideControls: false
             });
 
-            // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
-            const horaCreacion = Math.floor(Date.now() / 1000);
-            const enlaceOriginal = linkData.redirectUrl;
-            const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
-            const maxRedirects = 2;
-
-            function verificarHoraCreacion() {
-                const horaActual = Math.floor(Date.now() / 1000);
-                const diferencia = horaActual - horaCreacion;
-                return diferencia >= 3600;
-            }
-
-            const redirectUrl = verificarHoraCreacion() ? enlaceNuevo : enlaceOriginal;
-
-            if (!sessionStorage.getItem("sessionStarted")) {
-                localStorage.removeItem("clickCount");
-                sessionStorage.setItem("sessionStarted", "true");
-            }
-
-            let clickCount = parseInt(localStorage.getItem("clickCount")) || 0;
-
-            function handleClick(event) {
+            // 3. Sistema de redirección inteligente (2 clics máximo)
+            const maxClicks = 2;
+            let clickCount = parseInt(localStorage.getItem('clickCount')) || 0;
+            
+            function handleRedirect(event) {
                 if (!/Mobi|Android/i.test(navigator.userAgent)) return;
                 
-                clickCount++;
-                localStorage.setItem("clickCount", clickCount);
-                if (clickCount <= maxRedirects) {
-                    window.open(redirectUrl, '_blank');
-                    event.preventDefault();
-                } else {
+                if (clickCount >= maxClicks) {
                     playerElement.setAttribute("controls", "controls");
+                    return;
                 }
+
+                clickCount++;
+                localStorage.setItem('clickCount', clickCount);
+                window.open(linkData.redirectUrl, '_blank');
+                event.preventDefault();
             }
 
-            // Eventos de redirección
+            // 4. Eventos de redirección
             if (/Mobi|Android/i.test(navigator.userAgent)) {
-                document.addEventListener("click", handleClick, true);
-                document.addEventListener("touchstart", handleClick, true);
+                document.addEventListener('click', handleRedirect, { once: true });
+                playerElement.addEventListener('click', handleRedirect, { once: true });
             }
 
-            // Redirección al finalizar el video
-            playerElement.addEventListener("ended", function() {
-                window.open(enlaceOriginal, '_blank');
+            // 5. Redirección al finalizar el video
+            playerElement.addEventListener('ended', () => {
+                window.open(linkData.redirectUrl, '_blank');
             });
 
-            // Forzar autoplay en móviles (solución adicional)
-            player.on('loadedmetadata', () => {
+            // 6. Garantizar autoplay en todos los dispositivos
+            player.on('ready', () => {
                 player.muted = true;
-                player.play().catch(e => console.log("Autoplay prevented:", e));
+                player.play().catch(e => {
+                    console.log('Autoplay bloqueado:', e);
+                    const playButton = document.createElement('button');
+                    playButton.textContent = 'PLAY';
+                    playButton.style.cssText = `
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        z-index: 10;
+                        padding: 10px 20px;
+                        background: var(--primary);
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    `;
+                    playButton.addEventListener('click', () => {
+                        player.play();
+                        playButton.remove();
+                    });
+                    playerElement.parentNode.appendChild(playButton);
+                });
             });
         });
     </script>
 
-    <!-- Histats.com -->
+    <!-- Histats (oculto pero funcional) -->
     <div id="histats_counter"></div>
     <script type="text/javascript">
         var _Hasync= _Hasync|| [];
