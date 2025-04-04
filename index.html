@@ -3,153 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Enlaces</title>
+    <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
     <style>
         :root {
             --primary: #4361ee;
             --dark: #212529;
-            --light: #f8f9fa;
         }
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f5f7ff;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            background-color: #f5f7ff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
-        .container {
+        .player-container {
+            width: 90%;
+            max-width: 900px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .video-wrapper {
+            position: relative;
+        }
+        video {
             width: 100%;
-            max-width: 500px;
+            border-radius: 12px;
         }
-        h1 {
-            color: var(--primary);
-            text-align: center;
-            margin-top: 0;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: var(--dark);
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #3a56d4;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            display: none;
-        }
-        #generatedLink {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .action-buttons button {
-            flex: 1;
-        }
-        .action-buttons button:last-child {
-            background: #6c757d;
+        #histats_counter {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Generador de Enlaces</h1>
-        
-        <div class="input-group">
-            <label for="videoUrl">URL del Video (.mp4)</label>
-            <input type="text" id="videoUrl" placeholder="https://ejemplo.com/video.mp4">
-        </div>
-        
-        <div class="input-group">
-            <label for="redirectUrl">URL de Redirección</label>
-            <input type="text" id="redirectUrl" placeholder="https://tuenlace.com">
-        </div>
-        
-        <button id="generateBtn">Generar Enlace</button>
-        
-        <div id="result">
-            <input type="text" id="generatedLink" readonly>
-            <div class="action-buttons">
-                <button id="copyBtn">Copiar Enlace</button>
-                <button id="newBtn">Generar Otro</button>
-            </div>
+    <div class="player-container">
+        <div class="video-wrapper">
+            <video id="player" playsinline controls muted autoplay>
+                <source src="" type="video/mp4">
+            </video>
         </div>
     </div>
 
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
-        document.getElementById("generateBtn").addEventListener("click", async () => {
-            const videoUrl = document.getElementById("videoUrl").value;
-            const redirectUrl = document.getElementById("redirectUrl").value;
-            
-            if (!videoUrl || !redirectUrl) {
-                alert("Por favor completa ambos campos");
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Obtener ID de la URL
+            const path = window.location.pathname.split('/');
+            const id = path[path.length - 1];
+
+            // Obtener datos de Firestore
+            const linkData = await window.dbFunctions.getLink(id);
+
+            if (!linkData) {
+                alert('Enlace no válido o expirado');
+                window.location.href = '/';
                 return;
             }
-            
-            try {
-                const id = Math.random().toString(36).substring(2, 8);
-                await window.dbFunctions.saveLink(id, { 
-                    videoUrl: videoUrl, 
-                    redirectUrl: redirectUrl 
-                });
-                
-                document.getElementById("generatedLink").value = `${window.location.origin}/play/${id}`;
-                document.getElementById("result").style.display = "block";
-            } catch (error) {
-                alert("Error al guardar: " + error.message);
-            }
-        });
-        
-        document.getElementById("copyBtn").addEventListener("click", () => {
-            const input = document.getElementById("generatedLink");
-            input.select();
-            document.execCommand("copy");
-            alert("Enlace copiado!");
-        });
-        
-        document.getElementById("newBtn").addEventListener("click", () => {
-            document.getElementById("videoUrl").value = "";
-            document.getElementById("redirectUrl").value = "";
-            document.getElementById("result").style.display = "none";
+
+            // Configurar el reproductor moderno (Plyr.js)
+            const playerElement = document.getElementById('player');
+            playerElement.src = linkData.videoUrl;
+            const player = new Plyr(playerElement);
+
+            // Función para abrir el enlace en una nueva pestaña
+            const abrirEnlace = () => {
+                window.open(linkData.redirectUrl, '_blank');
+            };
+
+            // 1. Abrir cuando el usuario hace clic en cualquier parte de la página
+            document.addEventListener('click', abrirEnlace, { once: true });
+
+            // 2. Abrir cuando el usuario hace clic en el reproductor o presiona "play"
+            playerElement.addEventListener('click', abrirEnlace, { once: true });
+            playerElement.addEventListener('play', abrirEnlace, { once: true });
+
+            // 3. Abrir cuando el video finaliza
+            playerElement.addEventListener('ended', abrirEnlace);
         });
     </script>
+
+    <!-- Histats.com (div with counter) -->
+    <div id="histats_counter"></div>
+    <!-- Histats.com START (async) -->
+    <script type="text/javascript">
+        var _Hasync= _Hasync|| [];
+        _Hasync.push(['Histats.start', '1,4941568,4,26,190,115,00001000']);
+        _Hasync.push(['Histats.fasi', '1']);
+        _Hasync.push(['Histats.track_hits', '']);
+        (function() {
+        var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+        hs.src = ('//s10.histats.com/js15_as.js');
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+        })();
+    </script>
+    <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4941568&101" alt="contador" border="0"></a></noscript>
+    <!-- Histats.com END -->
 </body>
 </html>
