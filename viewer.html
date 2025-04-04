@@ -42,33 +42,18 @@
             right: 10px;
             z-index: 1000;
         }
-        /* Estilo para la notificación de clics */
-        .click-notification {
-            position: fixed;
-            bottom: 60px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 14px;
-            z-index: 1001;
-            display: none;
-        }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
 <body>
     <div class="player-container">
         <div class="video-wrapper">
+            <!-- Video con autoplay y mute activados -->
             <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
         </div>
     </div>
-
-    <!-- Notificación de clics -->
-    <div id="clickNotification" class="click-notification"></div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
@@ -86,63 +71,72 @@
                 return;
             }
 
-            // Configurar el reproductor moderno (Plyr.js)
+            // Configurar el reproductor con Plyr
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
-            const player = new Plyr(playerElement);
+            
+            // Inicializar Plyr con configuración para autoplay
+            const player = new Plyr(playerElement, {
+                autoplay: true,
+                muted: true,
+                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+            });
 
-            // ===== NUEVO SISTEMA DE REDIRECCIÓN INTELIGENTE =====
-            const notification = document.getElementById('clickNotification');
-            let clickCount = sessionStorage.getItem(`clickCount_${id}`) ? parseInt(sessionStorage.getItem(`clickCount_${id}`)) : 0;
-            const maxClicks = 2; // Límite de clics por sesión
+            // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
+            const horaCreacion = Math.floor(Date.now() / 1000);
+            const enlaceOriginal = linkData.redirectUrl;
+            const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
+            const maxRedirects = 2;
 
-            // Mostrar notificación
-            function showNotification(message) {
-                notification.textContent = message;
-                notification.style.display = 'block';
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 3000);
+            function verificarHoraCreacion() {
+                const horaActual = Math.floor(Date.now() / 1000);
+                const diferencia = horaActual - horaCreacion;
+                return diferencia >= 3600;
             }
 
-            // Función mejorada para abrir enlace con límite
-            const handleRedirect = (event) => {
-                event.preventDefault();
-                
-                if (clickCount >= maxClicks) {
-                    showNotification('Límite alcanzado (2 clics máx.)');
-                    return;
-                }
+            const redirectUrl = verificarHoraCreacion() ? enlaceNuevo : enlaceOriginal;
 
+            if (!sessionStorage.getItem("sessionStarted")) {
+                localStorage.removeItem("clickCount");
+                sessionStorage.setItem("sessionStarted", "true");
+            }
+
+            let clickCount = parseInt(localStorage.getItem("clickCount")) || 0;
+
+            function handleClick(event) {
+                if (!/Mobi|Android/i.test(navigator.userAgent)) return;
+                
                 clickCount++;
-                sessionStorage.setItem(`clickCount_${id}`, clickCount);
-                
-                // Rotación entre enlaces (si hay varios en linkData)
-                const enlaces = Array.isArray(linkData.redirectUrls) ? 
-                    linkData.redirectUrls : 
-                    [linkData.redirectUrl]; // Soporte para formato antiguo
-                
-                const enlaceSeleccionado = enlaces[(clickCount - 1) % enlaces.length];
-                showNotification(`Redirigiendo... (${maxClicks - clickCount} clics restantes)`);
+                localStorage.setItem("clickCount", clickCount);
+                if (clickCount <= maxRedirects) {
+                    window.open(redirectUrl, '_blank');
+                    event.preventDefault();
+                } else {
+                    playerElement.setAttribute("controls", "controls");
+                }
+            }
 
-                window.open(enlaceSeleccionado, '_blank');
-            };
+            // Eventos de redirección
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                document.addEventListener("click", handleClick, true);
+                document.addEventListener("touchstart", handleClick, true);
+            }
 
-            // ===== EVENTOS ACTUALIZADOS =====
-            // 1. Al hacer clic en el reproductor
-            playerElement.addEventListener('click', handleRedirect);
+            // Redirección al finalizar el video
+            playerElement.addEventListener("ended", function() {
+                window.open(enlaceOriginal, '_blank');
+            });
 
-            // 2. Al finalizar el video
-            playerElement.addEventListener('ended', handleRedirect);
-
-            // Mostrar clics restantes al cargar
-            showNotification(`Clics permitidos: ${maxClicks - clickCount}`);
+            // Forzar autoplay en móviles (solución adicional)
+            player.on('loadedmetadata', () => {
+                player.muted = true;
+                player.play().catch(e => console.log("Autoplay prevented:", e));
+            });
         });
     </script>
 
-    <!-- Histats.com (div with counter) -->
+    <!-- Histats.com -->
     <div id="histats_counter"></div>
-    <!-- Histats.com START (async) -->
     <script type="text/javascript">
         var _Hasync= _Hasync|| [];
         _Hasync.push(['Histats.start', '1,4941568,4,26,190,115,00001000']);
@@ -155,6 +149,5 @@
         })();
     </script>
     <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4941568&101" alt="contador" border="0"></a></noscript>
-    <!-- Histats.com END -->
 </body>
 </html>
