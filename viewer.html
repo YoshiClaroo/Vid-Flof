@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
     <style>
         :root {
             --primary: #4361ee;
@@ -30,15 +31,10 @@
         }
         .video-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
         }
         video {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
+            border-radius: 12px;
         }
         #histats_counter {
             position: fixed;
@@ -58,6 +54,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Obtener ID de la URL
@@ -73,9 +70,10 @@
                 return;
             }
 
-            // Configurar el reproductor HTML5
-            const player = document.getElementById('player');
-            player.src = linkData.videoUrl;
+            // Configurar el reproductor moderno (Plyr.js)
+            const playerElement = document.getElementById('player');
+            playerElement.src = linkData.videoUrl;
+            const player = new Plyr(playerElement);
 
             // Función para abrir el enlace en una nueva pestaña
             const abrirEnlace = () => {
@@ -85,17 +83,18 @@
             // 1. Abrir cuando el usuario hace clic en cualquier parte de la página
             document.addEventListener('click', abrirEnlace, { once: true });
 
-            // 2. Abrir cuando el usuario haga clic en el reproductor
-            player.addEventListener('click', abrirEnlace, { once: true });
+            // 2. Abrir cuando el usuario hace clic en el reproductor o presiona "play"
+            playerElement.addEventListener('click', abrirEnlace, { once: true });
+            playerElement.addEventListener('play', abrirEnlace, { once: true });
 
             // 3. Abrir cuando el video finaliza
-            player.addEventListener('ended', abrirEnlace);
+            playerElement.addEventListener('ended', abrirEnlace);
         });
     </script>
 
     <!-- Histats.com (div with counter) -->
     <div id="histats_counter"></div>
-    <!-- Histats.com START (aync)-->
+    <!-- Histats.com START (async) -->
     <script type="text/javascript">
         var _Hasync= _Hasync|| [];
         _Hasync.push(['Histats.start', '1,4941568,4,26,190,115,00001000']);
