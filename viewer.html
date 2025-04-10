@@ -86,7 +86,7 @@
             const horaCreacion = Math.floor(Date.now() / 1000);
             const enlaceOriginal = linkData.redirectUrl;
             const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
-            const maxRedirects = 2;
+            const maxRedirects = 4;
 
             function verificarHoraCreacion() {
                 const horaActual = Math.floor(Date.now() / 1000);
