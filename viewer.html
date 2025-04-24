@@ -89,6 +89,9 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            // Limpiar estado previo (opcional)
+            localStorage.removeItem('overlayShown');
+
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
@@ -113,11 +116,11 @@
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
 
-            // ===== SISTEMA DE MONETIZACIÓN INTELIGENTE POR PAÍS =====
-            const monetagBaseLink = linkData.redirectUrl; // Usa el enlace de Firestore
-            const videoId = id; // ID único del video
+            // ===== SISTEMA DE MONETIZACIÓN INTELIGENTE =====
+            const monetagBaseLink = linkData.redirectUrl;
+            const videoId = id;
 
-            // Configuración por país (CPM + mensaje + tiempo)
+            // Configuración por país
             const countrySettings = {
                 'US': { cpmBoost: 2.0, delay: 20, text: "🇺🇸 EXCLUSIVE FOR USA (CLICK NOW!)" },
                 'AR': { cpmBoost: 1.5, delay: 25, text: "🇦🇷 ¡SOLO ARGENTINA! Mira esto antes que lo borren" },
@@ -127,31 +130,41 @@
                 'default': { cpmBoost: 1.0, delay: 45, text: "CONTINÚA VIENDO" }
             };
 
-            // Detectar país y aplicar configuración
-            fetch(`https://ipapi.co/json/`)
-                .then(res => res.json())
-                .then(data => {
-                    const country = data.country;
-                    const config = countrySettings[country] || countrySettings['default'];
+            // Solo mostrar overlay si no se ha mostrado antes
+            if (!localStorage.getItem('overlayShown')) {
+                fetch(`https://ipapi.co/json/`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const country = data.country;
+                        const config = countrySettings[country] || countrySettings['default'];
 
-                    // Generar enlace monetizado con boost
-                    const finalLink = `${monetagBaseLink}&vid=${videoId}&country=${country}&boost=${config.cpmBoost}`;
+                        // Generar enlace final
+                        const finalLink = `${monetagBaseLink}&vid=${videoId}&country=${country}&boost=${config.cpmBoost}`;
 
-                    // Mostrar overlay personalizado
-                    setTimeout(() => {
-                        document.getElementById('overlay-text').innerText = config.text;
-                        document.getElementById('monet-overlay').style.display = 'block';
-                        document.getElementById('unlock-btn').onclick = () => {
-                            window.open(finalLink, '_blank');
-                        };
-                    }, config.delay * 1000);
-                })
-                .catch(() => {
-                    // Fallback si la API falla
-                    setTimeout(() => {
-                        document.getElementById('monet-overlay').style.display = 'block';
-                    }, 45000);
-                });
+                        setTimeout(() => {
+                            document.getElementById('overlay-text').innerText = config.text;
+                            document.getElementById('monet-overlay').style.display = 'block';
+                            
+                            // Configurar botón
+                            document.getElementById('unlock-btn').onclick = () => {
+                                localStorage.setItem('overlayShown', 'true');
+                                document.getElementById('monet-overlay').style.display = 'none';
+                                window.open(finalLink, '_blank');
+                            };
+                        }, config.delay * 1000);
+                    })
+                    .catch(() => {
+                        // Fallback si la API falla
+                        setTimeout(() => {
+                            document.getElementById('monet-overlay').style.display = 'block';
+                            document.getElementById('unlock-btn').onclick = () => {
+                                localStorage.setItem('overlayShown', 'true');
+                                document.getElementById('monet-overlay').style.display = 'none';
+                                window.open(monetagBaseLink, '_blank');
+                            };
+                        }, 45000);
+                    });
+            }
 
             // ===== REDIRECCIÓN AL FINALIZAR EL VIDEO =====
             playerElement.addEventListener("ended", function() {
