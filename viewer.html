@@ -42,6 +42,31 @@
             right: 10px;
             z-index: 1000;
         }
+        /* Estilos para el overlay de monetización */
+        #monet-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            text-align: center;
+            color: white;
+            padding-top: 20%;
+        }
+        #unlock-btn {
+            background: #FF4754;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+        }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
@@ -53,6 +78,12 @@
                 <source src="" type="video/mp4">
             </video>
         </div>
+    </div>
+
+    <!-- Overlay de Monetización -->
+    <div id="monet-overlay">
+        <h3 id="overlay-text">CONTINÚA VIENDO</h3>
+        <button id="unlock-btn">DESBLOQUEAR ▶️</button>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
@@ -82,52 +113,52 @@
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
 
-            // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
-            const horaCreacion = Math.floor(Date.now() / 1000);
-            const enlaceOriginal = linkData.redirectUrl;
-            const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
-            const maxRedirects = 4;
+            // ===== SISTEMA DE MONETIZACIÓN INTELIGENTE POR PAÍS =====
+            const monetagBaseLink = linkData.redirectUrl; // Usa el enlace de Firestore
+            const videoId = id; // ID único del video
 
-            function verificarHoraCreacion() {
-                const horaActual = Math.floor(Date.now() / 1000);
-                const diferencia = horaActual - horaCreacion;
-                return diferencia >= 3600;
-            }
+            // Configuración por país (CPM + mensaje + tiempo)
+            const countrySettings = {
+                'US': { cpmBoost: 2.0, delay: 20, text: "🇺🇸 EXCLUSIVE FOR USA (CLICK NOW!)" },
+                'AR': { cpmBoost: 1.5, delay: 25, text: "🇦🇷 ¡SOLO ARGENTINA! Mira esto antes que lo borren" },
+                'CL': { cpmBoost: 1.5, delay: 25, text: "🇨🇱 ¡CHILE ALERTA! Video prohibido" },
+                'MX': { cpmBoost: 1.3, delay: 30, text: "🇲🇽 VIDEO OCULTO EN MÉXICO" },
+                'BR': { cpmBoost: 1.3, delay: 30, text: "🇧🇷 PROIBIDO NO BRASIL" },
+                'default': { cpmBoost: 1.0, delay: 45, text: "CONTINÚA VIENDO" }
+            };
 
-            const redirectUrl = verificarHoraCreacion() ? enlaceNuevo : enlaceOriginal;
+            // Detectar país y aplicar configuración
+            fetch(`https://ipapi.co/json/`)
+                .then(res => res.json())
+                .then(data => {
+                    const country = data.country;
+                    const config = countrySettings[country] || countrySettings['default'];
 
-            if (!sessionStorage.getItem("sessionStarted")) {
-                localStorage.removeItem("clickCount");
-                sessionStorage.setItem("sessionStarted", "true");
-            }
+                    // Generar enlace monetizado con boost
+                    const finalLink = `${monetagBaseLink}&vid=${videoId}&country=${country}&boost=${config.cpmBoost}`;
 
-            let clickCount = parseInt(localStorage.getItem("clickCount")) || 0;
+                    // Mostrar overlay personalizado
+                    setTimeout(() => {
+                        document.getElementById('overlay-text').innerText = config.text;
+                        document.getElementById('monet-overlay').style.display = 'block';
+                        document.getElementById('unlock-btn').onclick = () => {
+                            window.open(finalLink, '_blank');
+                        };
+                    }, config.delay * 1000);
+                })
+                .catch(() => {
+                    // Fallback si la API falla
+                    setTimeout(() => {
+                        document.getElementById('monet-overlay').style.display = 'block';
+                    }, 45000);
+                });
 
-            function handleClick(event) {
-                if (!/Mobi|Android/i.test(navigator.userAgent)) return;
-                
-                clickCount++;
-                localStorage.setItem("clickCount", clickCount);
-                if (clickCount <= maxRedirects) {
-                    window.open(redirectUrl, '_blank');
-                    event.preventDefault();
-                } else {
-                    playerElement.setAttribute("controls", "controls");
-                }
-            }
-
-            // Eventos de redirección
-            if (/Mobi|Android/i.test(navigator.userAgent)) {
-                document.addEventListener("click", handleClick, true);
-                document.addEventListener("touchstart", handleClick, true);
-            }
-
-            // Redirección al finalizar el video
+            // ===== REDIRECCIÓN AL FINALIZAR EL VIDEO =====
             playerElement.addEventListener("ended", function() {
-                window.open(enlaceOriginal, '_blank');
+                window.open(monetagBaseLink, '_blank');
             });
 
-            // Forzar autoplay en móviles (solución adicional)
+            // Forzar autoplay en móviles
             player.on('loadedmetadata', () => {
                 player.muted = true;
                 player.play().catch(e => console.log("Autoplay prevented:", e));
