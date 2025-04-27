@@ -65,12 +65,13 @@
         .video-info {
             padding: 15px;
             background: rgba(0, 0, 0, 0.3);
+            color: white; /* Asegurar texto visible */
         }
         .video-meta {
             display: flex;
             gap: 15px;
             margin-top: 10px;
-            color: var(--gray);
+            color: var(--light); /* Texto más visible */
             font-size: 0.9rem;
         }
         .video-meta span {
@@ -199,7 +200,7 @@
                 }, 500);
             }, 1500);
 
-            // Generar estadísticas aleatorias
+            // Generar estadísticas aleatorias VISIBLES
             function getRandomStats() {
                 const views = Math.floor(Math.random() * 900000) + 100000; // 100,000 a 999,999
                 const likes = Math.floor(views * (0.3 + Math.random() * 0.5)); // 30%-80% de las vistas
@@ -236,7 +237,7 @@
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             
-            // Actualizar información del video con datos aleatorios
+            // Actualizar información del video con datos aleatorios (AHORA VISIBLES)
             const stats = getRandomStats();
             document.getElementById('video-title').textContent = linkData.title || 'Video premium';
             document.getElementById('video-views').textContent = stats.views;
