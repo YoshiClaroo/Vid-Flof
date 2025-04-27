@@ -11,67 +11,47 @@
     <style>
         :root {
             --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --dark: #1a1a2e;
-            --light: #f8f9fa;
-            --gray: #6c757d;
+            --dark: #212529;
         }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--dark);
-            color: var(--light);
+            background-color: #f5f7ff;
             display: flex;
             flex-direction: column;
+            align-items: center;
             min-height: 100vh;
         }
-        .header {
-            padding: 15px 0;
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            text-decoration: none;
-            font-size: 1.5rem;
-            font-weight: 500;
-        }
-        .logo-icon {
-            color: var(--primary);
-        }
         .player-container {
-            width: 800px;
-            height: 450px;
-            margin: 20px auto;
-            background: rgba(255, 255, 255, 0.05);
+            width: 90%;
+            max-width: 900px;
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            margin: 20px 0;
         }
         .video-wrapper {
             position: relative;
-            width: 100%;
-            height: 100%;
         }
         video {
             width: 100%;
-            height: 100%;
             display: block;
         }
         .video-info {
             padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            color: white; /* Asegurar texto visible */
+            background: white;
+        }
+        .video-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
         }
         .video-meta {
             display: flex;
             gap: 15px;
-            margin-top: 10px;
-            color: var(--light); /* Texto más visible */
+            color: #666;
             font-size: 0.9rem;
         }
         .video-meta span {
@@ -79,88 +59,37 @@
             align-items: center;
             gap: 5px;
         }
-        #histats_counter {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            z-index: 1000;
-        }
         .footer {
             margin-top: auto;
             padding: 20px 0;
             text-align: center;
-            color: var(--gray);
-            font-size: 0.9rem;
+            color: #666;
+            width: 100%;
         }
         .social-links {
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-top: 15px;
+            margin-top: 10px;
         }
         .social-link {
-            color: var(--gray);
+            color: #666;
             font-size: 1.2rem;
             transition: color 0.3s;
         }
         .social-link:hover {
             color: var(--primary);
         }
-        .loading-overlay {
+        #histats_counter {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--dark);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        .loading-text {
-            color: var(--light);
-            font-size: 1rem;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 850px) {
-            .player-container {
-                width: 95%;
-                height: auto;
-                aspect-ratio: 16/9;
-            }
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
 <body>
-    <div class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Cargando VidFlot...</div>
-    </div>
-
-    <header class="header">
-        <div class="logo">
-            <i class="fas fa-play-circle logo-icon"></i>
-            <span>VidFlot</span>
-        </div>
-    </header>
-
-    <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('groleegni.net',9257570,document.createElement('script'))</script>
-    
     <div class="player-container">
         <div class="video-wrapper">
             <video id="player" playsinline controls muted autoplay>
@@ -168,7 +97,7 @@
             </video>
         </div>
         <div class="video-info">
-            <h2 id="video-title">Título del video</h2>
+            <h2 class="video-title" id="video-title">Título del video</h2>
             <div class="video-meta">
                 <span><i class="fas fa-eye"></i> <span id="video-views">0</span> vistas</span>
                 <span><i class="fas fa-thumbs-up"></i> <span id="video-likes">0</span> likes</span>
@@ -189,25 +118,16 @@
 
     <div id="histats_counter"></div>
 
+    <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('groleegni.net',9257570,document.createElement('script'))</script>
+    
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Ocultar pantalla de carga
-            setTimeout(() => {
-                document.querySelector('.loading-overlay').style.opacity = '0';
-                setTimeout(() => {
-                    document.querySelector('.loading-overlay').style.display = 'none';
-                }, 500);
-            }, 1500);
-
-            // Generar estadísticas aleatorias VISIBLES
+            // Generar estadísticas aleatorias
             function getRandomStats() {
-                const views = Math.floor(Math.random() * 900000) + 100000; // 100,000 a 999,999
-                const likes = Math.floor(views * (0.3 + Math.random() * 0.5)); // 30%-80% de las vistas
-                const daysAgo = Math.floor(Math.random() * 30); // 0-29 días
-                
-                const date = new Date();
-                date.setDate(date.getDate() - daysAgo);
+                const views = Math.floor(Math.random() * 900000) + 100000;
+                const likes = Math.floor(views * (0.3 + Math.random() * 0.5));
+                const daysAgo = Math.floor(Math.random() * 30);
                 
                 const dateText = daysAgo === 0 ? 'Hoy' : 
                                 daysAgo === 1 ? 'Ayer' : 
@@ -224,7 +144,7 @@
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
 
-            // Obtener datos de Firestore (solo para el video)
+            // Obtener datos de Firestore
             const linkData = await window.dbFunctions.getLink(id);
 
             if (!linkData) {
@@ -233,11 +153,11 @@
                 return;
             }
 
-            // Configurar el reproductor con Plyr
+            // Configurar el reproductor
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             
-            // Actualizar información del video con datos aleatorios (AHORA VISIBLES)
+            // Actualizar información con datos aleatorios
             const stats = getRandomStats();
             document.getElementById('video-title').textContent = linkData.title || 'Video premium';
             document.getElementById('video-views').textContent = stats.views;
@@ -251,7 +171,7 @@
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
 
-            // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
+            // Sistema de redirección inteligente
             const horaCreacion = Math.floor(Date.now() / 1000);
             const enlaceOriginal = linkData.redirectUrl;
             const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
@@ -285,18 +205,15 @@
                 }
             }
 
-            // Eventos de redirección
             if (/Mobi|Android/i.test(navigator.userAgent)) {
                 document.addEventListener("click", handleClick, true);
                 document.addEventListener("touchstart", handleClick, true);
             }
 
-            // Redirección al finalizar el video
             playerElement.addEventListener("ended", function() {
                 window.open(enlaceOriginal, '_blank');
             });
 
-            // Forzar autoplay en móviles
             player.on('loadedmetadata', () => {
                 player.muted = true;
                 player.play().catch(e => console.log("Autoplay prevented:", e));
