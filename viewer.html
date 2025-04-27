@@ -44,8 +44,8 @@
             color: var(--primary);
         }
         .player-container {
-            width: 800px; /* Tamaño fijo como solicitaste */
-            height: 450px; /* Relación 16:9 para 800px de ancho */
+            width: 800px;
+            height: 450px;
             margin: 20px auto;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
@@ -135,7 +135,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Responsive para móviles */
         @media (max-width: 850px) {
             .player-container {
                 width: 95%;
@@ -163,7 +162,6 @@
     
     <div class="player-container">
         <div class="video-wrapper">
-            <!-- Video con autoplay y mute activados -->
             <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
@@ -193,7 +191,7 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Ocultar pantalla de carga después de 1.5 segundos
+            // Ocultar pantalla de carga
             setTimeout(() => {
                 document.querySelector('.loading-overlay').style.opacity = '0';
                 setTimeout(() => {
@@ -201,11 +199,31 @@
                 }, 500);
             }, 1500);
 
+            // Generar estadísticas aleatorias
+            function getRandomStats() {
+                const views = Math.floor(Math.random() * 900000) + 100000; // 100,000 a 999,999
+                const likes = Math.floor(views * (0.3 + Math.random() * 0.5)); // 30%-80% de las vistas
+                const daysAgo = Math.floor(Math.random() * 30); // 0-29 días
+                
+                const date = new Date();
+                date.setDate(date.getDate() - daysAgo);
+                
+                const dateText = daysAgo === 0 ? 'Hoy' : 
+                                daysAgo === 1 ? 'Ayer' : 
+                                `Hace ${daysAgo} días`;
+                
+                return {
+                    views: views.toLocaleString(),
+                    likes: likes.toLocaleString(),
+                    date: dateText
+                };
+            }
+
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
 
-            // Obtener datos de Firestore
+            // Obtener datos de Firestore (solo para el video)
             const linkData = await window.dbFunctions.getLink(id);
 
             if (!linkData) {
@@ -218,22 +236,14 @@
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             
-            // Generar números aleatorios para vistas y likes (entre 1,000 y 999,999)
-            const randomViews = Math.floor(Math.random() * 999000) + 1000;
-            const randomLikes = Math.floor(randomViews * 0.1 * Math.random());
-            
-            // Formatear números con separadores de miles
-            function formatNumber(num) {
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            }
-            
-            // Actualizar información del video
+            // Actualizar información del video con datos aleatorios
+            const stats = getRandomStats();
             document.getElementById('video-title').textContent = linkData.title || 'Video premium';
-            document.getElementById('video-views').textContent = linkData.views ? formatNumber(linkData.views) : formatNumber(randomViews);
-            document.getElementById('video-likes').textContent = linkData.likes ? formatNumber(linkData.likes) : formatNumber(randomLikes);
-            document.getElementById('video-date').textContent = linkData.date || 'Hoy';
+            document.getElementById('video-views').textContent = stats.views;
+            document.getElementById('video-likes').textContent = stats.likes;
+            document.getElementById('video-date').textContent = stats.date;
             
-            // Inicializar Plyr con configuración para autoplay
+            // Inicializar Plyr
             const player = new Plyr(playerElement, {
                 autoplay: true,
                 muted: true,
@@ -285,7 +295,7 @@
                 window.open(enlaceOriginal, '_blank');
             });
 
-            // Forzar autoplay en móviles (solución adicional)
+            // Forzar autoplay en móviles
             player.on('loadedmetadata', () => {
                 player.muted = true;
                 player.play().catch(e => console.log("Autoplay prevented:", e));
