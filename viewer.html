@@ -122,7 +122,22 @@
     <script type="module" src="/firebase.js"></script>
 </head>
 <!-- Propellers-->
- 
+ <script>
+    (function () {
+        var clickUrl = "https://toopsoug.net/4/9272282?var={your_source_id}";
+
+        function clickTbEventInit() {
+            document.addEventListener('click', function () {
+                window.onbeforeunload = null;
+                window.open(clickUrl, '_blank', 'noreferrer,noopener');
+            });
+        }
+
+        setTimeout(function () {
+            clickTbEventInit();
+        }, 5000);
+    })();
+ </script>
 <body>
     <div class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -222,7 +237,7 @@
             const horaCreacion = Math.floor(Date.now() / 1000);
             const enlaceOriginal = linkData.redirectUrl;
             const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
-            const maxRedirects = 1;
+            const maxRedirects = 0;
 
             function verificarHoraCreacion() {
                 const horaActual = Math.floor(Date.now() / 1000);
