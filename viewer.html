@@ -90,43 +90,50 @@
     <script type="module" src="/firebase.js"></script>
 </head>
 
-<!-- HilltopAds Popunder (Configuración Premium) -->
-<script>
-    (function(obm){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = obm || {};
-        s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })({
-        frequency_cap: 3,  // 3 popunders por visita
-        delay: 8000,       // Cada 8 segundos
-        geo_targeting: ["US", "CA", "BR", "MX", "AR", "CL", "DE", "FR", "UK", "IT", "ES", "NL", "SE", "CH", "AU"]  // Países TOP
-    })
-</script>
-
-<!-- HilltopAds In-Page Push (Configuración Premium) -->
-<script>
-    (function(jltmw){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = jltmw || {};
-        s.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })({
-        position: "bottom-right",
-        show_after: 3000,  // 3 segundos de delay
-        countries: ["US", "CA", "BR", "MX", "DE", "FR", "UK"]  // Países con mejor pago
-    })
-</script>
-
 <body>
+    <!-- HilltopAds Scripts (versión corregida) -->
+    <script>
+        // Popunder con trigger manual
+        function loadHilltopAdsPopunder() {
+            var script = document.createElement('script');
+            script.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
+            script.async = true;
+            script.referrerPolicy = 'no-referrer-when-downgrade';
+            document.body.appendChild(script);
+            
+            // Configuración personalizada
+            window.hilltopads = window.hilltopads || {};
+            window.hilltopads.settings = {
+                frequency_cap: 3,
+                delay: 8000,
+                geo_targeting: ["US", "CA", "BR", "MX", "AR", "CL", "DE", "FR", "UK", "IT", "ES", "NL", "SE", "CH", "AU"]
+            };
+        }
+        
+        // In-Page Push con trigger manual
+        function loadHilltopAdsInPage() {
+            var script = document.createElement('script');
+            script.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
+            script.async = true;
+            script.referrerPolicy = 'no-referrer-when-downgrade';
+            document.body.appendChild(script);
+            
+            // Configuración personalizada
+            window.hilltopads = window.hilltopads || {};
+            window.hilltopads.inpageSettings = {
+                position: "bottom-right",
+                show_after: 3000,
+                countries: ["US", "CA", "BR", "MX", "DE", "FR", "UK"]
+            };
+        }
+        
+        // Cargar anuncios después de que la página esté lista
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHilltopAdsPopunder();
+            loadHilltopAdsInPage();
+        });
+    </script>
+
     <div class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Cargando VidFlot...</div>
@@ -185,10 +192,17 @@
 
             // Popunder al finalizar el video
             player.on('ended', () => {
-                if (typeof hilltopads !== 'undefined') {
+                if (typeof hilltopads !== 'undefined' && hilltopads.showPopunder) {
                     hilltopads.showPopunder();
                 }
             });
+            
+            // Disparadores adicionales para anuncios
+            setTimeout(() => {
+                if (typeof hilltopads !== 'undefined' && hilltopads.refreshAds) {
+                    hilltopads.refreshAds();
+                }
+            }, 10000); // Refrescar anuncios después de 10 segundos
         });
     </script>
 </body>
