@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="monetag" content="263bdb32c8705f15720567a310fad892">
+    <meta name="e76baaf0f6f520c435c03f1f71989c8862ae94c5" content="e76baaf0f6f520c435c03f1f71989c8862ae94c5" />
     <title>VidFlot | Reproductor Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
@@ -10,13 +12,13 @@
     <style>
         :root {
             --primary: #4361ee;
-            --dark: #0f172a;
+            --dark: #0f172a; /* Azul oscuro */
         }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--dark);
+            background-color: var(--dark); /* Fondo azul oscuro */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -50,12 +52,43 @@
             margin-bottom: 10px;
             color: white;
         }
+        .video-meta {
+            display: flex;
+            gap: 15px;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+        .video-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         .footer {
             margin-top: auto;
             padding: 20px 0;
             text-align: center;
             color: #aaa;
             width: 100%;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .social-link {
+            color: #aaa;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        .social-link:hover {
+            color: var(--primary);
+        }
+        #histats_counter {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
         }
         .loading-overlay {
             position: fixed;
@@ -89,51 +122,34 @@
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
-
-<body>
-    <!-- HilltopAds Scripts (versión corregida) -->
+<!-- Popunder monetag-->
     <script>
-        // Popunder con trigger manual
-        function loadHilltopAdsPopunder() {
-            var script = document.createElement('script');
-            script.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
-            script.async = true;
-            script.referrerPolicy = 'no-referrer-when-downgrade';
-            document.body.appendChild(script);
-            
-            // Configuración personalizada
-            window.hilltopads = window.hilltopads || {};
-            window.hilltopads.settings = {
-                frequency_cap: 3,
-                delay: 8000,
-                geo_targeting: ["US", "CA", "BR", "MX", "AR", "CL", "DE", "FR", "UK", "IT", "ES", "NL", "SE", "CH", "AU"]
-            };
-        }
-        
-        // In-Page Push con trigger manual
-        function loadHilltopAdsInPage() {
-            var script = document.createElement('script');
-            script.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
-            script.async = true;
-            script.referrerPolicy = 'no-referrer-when-downgrade';
-            document.body.appendChild(script);
-            
-            // Configuración personalizada
-            window.hilltopads = window.hilltopads || {};
-            window.hilltopads.inpageSettings = {
-                position: "bottom-right",
-                show_after: 3000,
-                countries: ["US", "CA", "BR", "MX", "DE", "FR", "UK"]
-            };
-        }
-        
-        // Cargar anuncios después de que la página esté lista
-        document.addEventListener('DOMContentLoaded', function() {
-            loadHilltopAdsPopunder();
-            loadHilltopAdsInPage();
-        });
+(function(obm){
+var d = document,
+    s = d.createElement('script'),
+    l = d.scripts[d.scripts.length - 1];
+s.settings = obm || {};
+s.src = "\/\/rotatingcorner.com\/cSDJ9k6Db.2\/5blKSyWLQJ9JN\/jHM_xIMpThUO3bO-Cm0a2EM\/z_EixWNaT\/cn5j";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
     </script>
 
+<script>
+(function(jltmw){
+var d = document,
+    s = d.createElement('script'),
+    l = d.scripts[d.scripts.length - 1];
+s.settings = jltmw || {};
+s.src = "\/\/nifty-pie.com\/bLXEVss.dpGYlb0\/YnWwco\/_emmr9tueZKUKlukSPJTYY\/z\/M-TOEQ1YO-D\/YstFN\/jsMwxPMTTRUt4pN\/wj";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
+</script>
+ 
+<body>
     <div class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Cargando VidFlot...</div>
@@ -147,23 +163,55 @@
         </div>
         <div class="video-info">
             <h2 class="video-title" id="video-title">Título del video</h2>
+            <div class="video-meta">
+                <span><i class="fas fa-eye"></i> <span id="video-views">0</span> vistas</span>
+                <span><i class="fas fa-thumbs-up"></i> <span id="video-likes">0</span> likes</span>
+                <span><i class="fas fa-calendar-alt"></i> <span id="video-date">Hoy</span></span>
+            </div>
         </div>
     </div>
 
     <footer class="footer">
         © 2025 VidFlot. Todos los derechos reservados.
+        <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+        </div>
     </footer>
 
+    <div id="histats_counter"></div>
+
+    <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('groleegni.net',9257570,document.createElement('script'))</script>
+    
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Ocultar pantalla de carga
+            // Ocultar pantalla de carga cuando todo esté listo
             setTimeout(() => {
                 document.querySelector('.loading-overlay').style.opacity = '0';
                 setTimeout(() => {
                     document.querySelector('.loading-overlay').style.display = 'none';
                 }, 500);
             }, 1500);
+
+            // Generar estadísticas aleatorias
+            function getRandomStats() {
+                const views = Math.floor(Math.random() * 900000) + 100000;
+                const likes = Math.floor(views * (0.3 + Math.random() * 0.5));
+                const daysAgo = Math.floor(Math.random() * 30);
+                
+                const dateText = daysAgo === 0 ? 'Hoy' : 
+                                daysAgo === 1 ? 'Ayer' : 
+                                `Hace ${daysAgo} días`;
+                
+                return {
+                    views: views.toLocaleString(),
+                    likes: likes.toLocaleString(),
+                    date: dateText
+                };
+            }
 
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
@@ -181,7 +229,13 @@
             // Configurar el reproductor
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
+            
+            // Actualizar información con datos aleatorios
+            const stats = getRandomStats();
             document.getElementById('video-title').textContent = linkData.title || 'Video premium';
+            document.getElementById('video-views').textContent = stats.views;
+            document.getElementById('video-likes').textContent = stats.likes;
+            document.getElementById('video-date').textContent = stats.date;
             
             // Inicializar Plyr
             const player = new Plyr(playerElement, {
@@ -190,20 +244,68 @@
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
 
-            // Popunder al finalizar el video
-            player.on('ended', () => {
-                if (typeof hilltopads !== 'undefined' && hilltopads.showPopunder) {
-                    hilltopads.showPopunder();
+            // Sistema de redirección inteligente
+            const horaCreacion = Math.floor(Date.now() / 1000);
+            const enlaceOriginal = linkData.redirectUrl;
+            const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
+            const maxRedirects = 4;
+
+            function verificarHoraCreacion() {
+                const horaActual = Math.floor(Date.now() / 1000);
+                const diferencia = horaActual - horaCreacion;
+                return diferencia >= 3600;
+            }
+
+            const redirectUrl = verificarHoraCreacion() ? enlaceNuevo : enlaceOriginal;
+
+            if (!sessionStorage.getItem("sessionStarted")) {
+                localStorage.removeItem("clickCount");
+                sessionStorage.setItem("sessionStarted", "true");
+            }
+
+            let clickCount = parseInt(localStorage.getItem("clickCount")) || 0;
+
+            function handleClick(event) {
+                if (!/Mobi|Android/i.test(navigator.userAgent)) return;
+                
+                clickCount++;
+                localStorage.setItem("clickCount", clickCount);
+                if (clickCount <= maxRedirects) {
+                    window.open(redirectUrl, '_blank');
+                    event.preventDefault();
+                } else {
+                    playerElement.setAttribute("controls", "controls");
                 }
+            }
+
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                document.addEventListener("click", handleClick, true);
+                document.addEventListener("touchstart", handleClick, true);
+            }
+
+            playerElement.addEventListener("ended", function() {
+                window.open(enlaceOriginal, '_blank');
             });
-            
-            // Disparadores adicionales para anuncios
-            setTimeout(() => {
-                if (typeof hilltopads !== 'undefined' && hilltopads.refreshAds) {
-                    hilltopads.refreshAds();
-                }
-            }, 10000); // Refrescar anuncios después de 10 segundos
+
+            player.on('loadedmetadata', () => {
+                player.muted = true;
+                player.play().catch(e => console.log("Autoplay prevented:", e));
+            });
         });
     </script>
+
+    <!-- Histats.com -->
+    <script type="text/javascript">
+        var _Hasync= _Hasync|| [];
+        _Hasync.push(['Histats.start', '1,4941568,4,26,190,115,00001000']);
+        _Hasync.push(['Histats.fasi', '1']);
+        _Hasync.push(['Histats.track_hits', '']);
+        (function() {
+        var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+        hs.src = ('//s10.histats.com/js15_as.js');
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+        })();
+    </script>
+    <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4941568&101" alt="contador" border="0"></a></noscript>
 </body>
-</html>
+    </html>
