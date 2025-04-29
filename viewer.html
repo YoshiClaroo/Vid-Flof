@@ -3,108 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tu Página con Popunder</title>
+  <meta name="monetag" content="263bdb32c8705f15720567a310fad892">
+  <meta name="e76baaf0f6f520c435c03f1f71989c8862ae94c5" content="e76baaf0f6f520c435c03f1f71989c8862ae94c5" />
+  <title>VidFlot | Reproductor Premium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --primary: #4361ee; --dark: #0f172a; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: white;
+    }
+    .player-container {
+      width: 90%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      margin: 20px 0;
+      backdrop-filter: blur(5px);
+    }
+    .video-wrapper {
+      position: relative;
+    }
+    video {
+      width: 100%;
+      display: block;
+      background-color: #000;
+    }
+    .video-info {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+    .video-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: white;
+    }
+    .footer {
+      margin-top: auto;
+      padding: 20px 0;
+      text-align: center;
+      color: #aaa;
+      width: 100%;
+    }
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+    .loading-text {
+      color: white;
+      font-size: 1rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <script type="module" src="/firebase.js"></script>
 </head>
+
 <body>
+  <div class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Cargando VidFlot...</div>
+  </div>
 
-<!-- Tu contenido normal aquí -->
-<video id="player" controls width="600">
-  <source src="tu-video.mp4" type="video/mp4">
-  Tu navegador no soporta el video.
-</video>
+  <div class="player-container">
+    <div class="video-wrapper">
+      <video id="player" playsinline controls muted autoplay>
+        <source src="" type="video/mp4">
+      </video>
+    </div>
+    <div class="video-info">
+      <h2 class="video-title" id="video-title">Título del video</h2>
+    </div>
+  </div>
 
-<!-- Scripts de anuncios y control de Popunder -->
-<script>
-  // Función para activar Popunder
-  function triggerPopunder() {
-      (function(lelm){
-          var d = document,
-              s = d.createElement('script'),
-              l = d.scripts[d.scripts.length - 1];
-          s.settings = lelm || {};
-          s.src = "//rotatingcorner.com/cyDp9I6.b/2m5plBS_WTQ/9vNsjaMCxMMVT/Uk3POcC/0_2iM/z/EjxxNHTpcD5E";
-          s.async = true;
-          s.referrerPolicy = 'no-referrer-when-downgrade';
-          l.parentNode.insertBefore(s, l);
-      })({});
-  }
+  <footer class="footer">
+    © 2025 VidFlot. Todos los derechos reservados.
+  </footer>
 
-  // Función para activar In-Page Ad
-  function triggerInPage() {
-      (function(d,z,s){
-          s.src='https://groleegni.net/401/9257570';
-          try{(document.body||document.documentElement).appendChild(s)}
-          catch(e){}
-      })(document, 9257570, document.createElement('script'));
-  }
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      setTimeout(() => {
+        document.querySelector('.loading-overlay').style.opacity = '0';
+        setTimeout(() => {
+          document.querySelector('.loading-overlay').style.display = 'none';
+        }, 500);
+      }, 1500);
 
-  // Variables de control
-  let popunderCount = 0;
-  let maxPopunders = 3;
-  let popunderInterval;
-  let canTriggerOnClick = false;
+      const path = window.location.pathname.split('/');
+      const id = path[path.length - 1];
 
-  window.addEventListener('load', function() {
-      // Mostrar In-Page al cargar
-      triggerInPage();
+      const linkData = await window.dbFunctions.getLink(id);
 
-      // Primera activación inmediata
-      triggerPopunder();
-      popunderCount++;
-
-      // Programar las siguientes activaciones cada 8 segundos
-      popunderInterval = setInterval(function() {
-          if (popunderCount < maxPopunders) {
-              triggerPopunder();
-              popunderCount++;
-          } else {
-              clearInterval(popunderInterval); // Detener el intervalo
-              canTriggerOnClick = true; // Habilitar popunder por click
-          }
-      }, 8000);
-
-      // Activar popunder si el usuario hace click después de terminar los automáticos
-      document.addEventListener('click', function() {
-          if (canTriggerOnClick) {
-              triggerPopunder();
-              canTriggerOnClick = false; // Solo permitir un click popunder
-          }
-      });
-  });
-
-  // Activar popunder cuando termine el video
-  document.addEventListener('DOMContentLoaded', function () {
-      const playerElement = document.getElementById('player');
-      if (playerElement) {
-          playerElement.addEventListener('ended', function() {
-              triggerPopunder();
-          });
+      if (!linkData) {
+        alert('Enlace no válido o expirado');
+        window.location.href = '/';
+        return;
       }
-  });
 
-  // Otros anuncios (opcional, solo si los necesitas)
-  (function(obm){
-      var d = document,
-          s = d.createElement('script'),
-          l = d.scripts[d.scripts.length - 1];
-      s.settings = obm || {};
-      s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
-      s.async = true;
-      s.referrerPolicy = 'no-referrer-when-downgrade';
-      l.parentNode.insertBefore(s, l);
-  })();
+      const playerElement = document.getElementById('player');
+      playerElement.src = linkData.videoUrl;
+      
+      document.getElementById('video-title').textContent = linkData.title || 'Video premium';
 
-  (function(jltmw){
-      var d = document,
-          s = d.createElement('script'),
-          l = d.scripts[d.scripts.length - 1];
-      s.settings = jltmw || {};
-      s.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
-      s.async = true;
-      s.referrerPolicy = 'no-referrer-when-downgrade';
-      l.parentNode.insertBefore(s, l);
-  })();
-</script>
-
+      const player = new Plyr(playerElement, {
+        autoplay: true,
+        muted: true,
+        controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+      });
+    });
+  </script>
 </body>
-</html>
+    </html>
