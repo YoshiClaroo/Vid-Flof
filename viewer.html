@@ -1,147 +1,268 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="monetag" content="263bdb32c8705f15720567a310fad892">
-  <meta name="e76baaf0f6f520c435c03f1f71989c8862ae94c5" content="e76baaf0f6f520c435c03f1f71989c8862ae94c5" />
-  <title>VidFlot | Reproductor Premium</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root { --primary: #4361ee; --dark: #0f172a; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--dark);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      color: white;
-    }
-    .player-container {
-      width: 90%;
-      max-width: 900px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-      margin: 20px 0;
-      backdrop-filter: blur(5px);
-    }
-    .video-wrapper {
-      position: relative;
-    }
-    video {
-      width: 100%;
-      display: block;
-      background-color: #000;
-    }
-    .video-info {
-      padding: 15px;
-      background: rgba(0, 0, 0, 0.3);
-    }
-    .video-title {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-      color: white;
-    }
-    .footer {
-      margin-top: auto;
-      padding: 20px 0;
-      text-align: center;
-      color: #aaa;
-      width: 100%;
-    }
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--dark);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      border-top-color: var(--primary);
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
-    }
-    .loading-text {
-      color: white;
-      font-size: 1rem;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-  <script type="module" src="/firebase.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="monetag" content="263bdb32c8705f15720567a310fad892">
+    <meta name="e76baaf0f6f520c435c03f1f71989c8862ae94c5" content="e76baaf0f6f520c435c03f1f71989c8862ae94c5" />
+    <title>VidFlot | Reproductor Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --dark: #0f172a; /* Azul oscuro */
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark); /* Fondo azul oscuro */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+        .player-container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px 0;
+            backdrop-filter: blur(5px);
+        }
+        .video-wrapper {
+            position: relative;
+        }
+        video {
+            width: 100%;
+            display: block;
+            background-color: #000;
+        }
+        .video-info {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .video-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+        .video-meta {
+            display: flex;
+            gap: 15px;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+        .video-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .footer {
+            margin-top: auto;
+            padding: 20px 0;
+            text-align: center;
+            color: #aaa;
+            width: 100%;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .social-link {
+            color: #aaa;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        .social-link:hover {
+            color: var(--primary);
+        }
+        #histats_counter {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        .loading-text {
+            color: white;
+            font-size: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <script type="module" src="/firebase.js"></script>
 </head>
 
 <body>
-  <div class="loading-overlay">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">Cargando VidFlot...</div>
-  </div>
-
-  <div class="player-container">
-    <div class="video-wrapper">
-      <video id="player" playsinline controls muted autoplay>
-        <source src="" type="video/mp4">
-      </video>
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando VidFlot...</div>
     </div>
-    <div class="video-info">
-      <h2 class="video-title" id="video-title">Título del video</h2>
+
+    <div class="player-container">
+        <div class="video-wrapper">
+            <video id="player" playsinline controls muted autoplay>
+                <source src="" type="video/mp4">
+            </video>
+        </div>
+        <div class="video-info">
+            <h2 class="video-title" id="video-title">Título del video</h2>
+            <div class="video-meta">
+                <span><i class="fas fa-eye"></i> <span id="video-views">0</span> vistas</span>
+                <span><i class="fas fa-thumbs-up"></i> <span id="video-likes">0</span> likes</span>
+                <span><i class="fas fa-calendar-alt"></i> <span id="video-date">Hoy</span></span>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <footer class="footer">
-    © 2025 VidFlot. Todos los derechos reservados.
-  </footer>
+    <footer class="footer">
+        © 2025 VidFlot. Todos los derechos reservados.
+        <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+        </div>
+    </footer>
 
-  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      setTimeout(() => {
-        document.querySelector('.loading-overlay').style.opacity = '0';
-        setTimeout(() => {
-          document.querySelector('.loading-overlay').style.display = 'none';
-        }, 500);
-      }, 1500);
+    <div id="histats_counter"></div>
 
-      const path = window.location.pathname.split('/');
-      const id = path[path.length - 1];
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Ocultar pantalla de carga cuando todo esté listo
+            setTimeout(() => {
+                document.querySelector('.loading-overlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.querySelector('.loading-overlay').style.display = 'none';
+                }, 500);
+            }, 1500);
 
-      const linkData = await window.dbFunctions.getLink(id);
+            // Generar estadísticas aleatorias
+            function getRandomStats() {
+                const views = Math.floor(Math.random() * 900000) + 100000;
+                const likes = Math.floor(views * (0.3 + Math.random() * 0.5));
+                const daysAgo = Math.floor(Math.random() * 30);
+                
+                const dateText = daysAgo === 0 ? 'Hoy' : 
+                                daysAgo === 1 ? 'Ayer' : 
+                                `Hace ${daysAgo} días`;
+                
+                return {
+                    views: views.toLocaleString(),
+                    likes: likes.toLocaleString(),
+                    date: dateText
+                };
+            }
 
-      if (!linkData) {
-        alert('Enlace no válido o expirado');
-        window.location.href = '/';
-        return;
-      }
+            // Obtener ID de la URL
+            const path = window.location.pathname.split('/');
+            const id = path[path.length - 1];
 
-      const playerElement = document.getElementById('player');
-      playerElement.src = linkData.videoUrl;
-      
-      document.getElementById('video-title').textContent = linkData.title || 'Video premium';
+            // Obtener datos de Firestore
+            const linkData = await window.dbFunctions.getLink(id);
 
-      const player = new Plyr(playerElement, {
-        autoplay: true,
-        muted: true,
-        controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
-      });
-    });
-  </script>
+            if (!linkData) {
+                alert('Enlace no válido o expirado');
+                window.location.href = '/';
+                return;
+            }
+
+            // Configurar el reproductor
+            const playerElement = document.getElementById('player');
+            playerElement.src = linkData.videoUrl;
+            
+            // Actualizar información con datos aleatorios
+            const stats = getRandomStats();
+            document.getElementById('video-title').textContent = linkData.title || 'Video premium';
+            document.getElementById('video-views').textContent = stats.views;
+            document.getElementById('video-likes').textContent = stats.likes;
+            document.getElementById('video-date').textContent = stats.date;
+            
+            // Inicializar Plyr
+            const player = new Plyr(playerElement, {
+                autoplay: true,
+                muted: true,
+                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+            });
+
+            // Sistema de redirección inteligente
+            const horaCreacion = Math.floor(Date.now() / 1000);
+            const enlaceOriginal = linkData.redirectUrl;
+            const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
+            const maxRedirects = 4;
+
+            function verificarHoraCreacion() {
+                const horaActual = Math.floor(Date.now() / 1000);
+                const diferencia = horaActual - horaCreacion;
+                return diferencia >= 3600;
+            }
+
+            const redirectUrl = verificarHoraCreacion() ? enlaceNuevo : enlaceOriginal;
+
+            if (!sessionStorage.getItem("sessionStarted")) {
+                localStorage.removeItem("clickCount");
+                sessionStorage.setItem("sessionStarted", "true");
+            }
+
+            let clickCount = parseInt(localStorage.getItem("clickCount")) || 0;
+
+            function handleClick(event) {
+                if (!/Mobi|Android/i.test(navigator.userAgent)) return;
+                
+                clickCount++;
+                localStorage.setItem("clickCount", clickCount);
+                if (clickCount <= maxRedirects) {
+                    window.open(redirectUrl, '_blank');
+                    event.preventDefault();
+                } else {
+                    playerElement.setAttribute("controls", "controls");
+                }
+            }
+
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                document.addEventListener("click", handleClick, true);
+                document.addEventListener("touchstart", handleClick, true);
+            }
+
+            playerElement.addEventListener("ended", function() {
+                window.open(enlaceOriginal, '_blank');
+            });
+
+            player.on('loadedmetadata', () => {
+                player.muted = true;
+                player.play().catch(e => console.log("Autoplay prevented:", e));
+            });
+        });
+    </script>
 </body>
-    </html>
+                                                         </html>
