@@ -121,7 +121,10 @@
         }
     </style>
     <script type="module" src="/firebase.js"></script>
-</head> 
+</head>
+<!-- Popunder monetag-->
+
+ 
 <body>
     <div class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -144,6 +147,11 @@
         </div>
     </div>
 
+    <footer class="footer">
+        © 2025 VidFlot. Todos los derechos reservados.
+    </footer>
+
+    <div id="histats_counter"></div>
 
     <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('groleegni.net',9257570,document.createElement('script'))</script>
     
@@ -176,12 +184,6 @@
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             
-            // Actualizar información con datos aleatorios
-            const stats = getRandomStats();
-            document.getElementById('video-title').textContent = linkData.title || 'Video premium';
-            document.getElementById('video-views').textContent = stats.views;
-            document.getElementById('video-likes').textContent = stats.likes;
-            document.getElementById('video-date').textContent = stats.date;
             
             // Inicializar Plyr
             const player = new Plyr(playerElement, {
@@ -240,5 +242,18 @@
         });
     </script>
 
+    <!-- Histats.com -->
+    <script type="text/javascript">
+        var _Hasync= _Hasync|| [];
+        _Hasync.push(['Histats.start', '1,4941568,4,26,190,115,00001000']);
+        _Hasync.push(['Histats.fasi', '1']);
+        _Hasync.push(['Histats.track_hits', '']);
+        (function() {
+        var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+        hs.src = ('//s10.histats.com/js15_as.js');
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+        })();
+    </script>
+    <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4941568&101" alt="contador" border="0"></a></noscript>
 </body>
-    </html>
+                                                </html>
