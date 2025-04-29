@@ -87,11 +87,10 @@
             to { transform: rotate(360deg); }
         }
     </style>
-    <!-- Firebase (conservado intacto) -->
     <script type="module" src="/firebase.js"></script>
 </head>
 
-<!-- HilltopAds Popunder (optimizado) -->
+<!-- HilltopAds Popunder (Configuración Premium) -->
 <script>
     (function(obm){
         var d = document,
@@ -103,13 +102,13 @@
         s.referrerPolicy = 'no-referrer-when-downgrade';
         l.parentNode.insertBefore(s, l);
     })({
-        frequency_cap: 4,  // 1 popunder por visita
-        delay: 8000,       // Se activa después de 8 segundos
-        geo_targeting: ["BR", "MX", "AR", "CL"]  // Solo países con buen CPM
+        frequency_cap: 3,  // 3 popunders por visita
+        delay: 8000,       // Cada 8 segundos
+        geo_targeting: ["US", "CA", "BR", "MX", "AR", "CL", "DE", "FR", "UK", "IT", "ES", "NL", "SE", "CH", "AU"]  // Países TOP
     })
 </script>
 
-<!-- HilltopAds In-Page Push (optimizado) -->
+<!-- HilltopAds In-Page Push (Configuración Premium) -->
 <script>
     (function(jltmw){
         var d = document,
@@ -121,9 +120,9 @@
         s.referrerPolicy = 'no-referrer-when-downgrade';
         l.parentNode.insertBefore(s, l);
     })({
-        position: "bottom-right",  // Mayor CTR
-        show_after: 5000,          // 5 segundos de delay
-        countries: ["BR", "MX", "AR", "CL"]  // Solo LATAM rentable
+        position: "bottom-right",
+        show_after: 3000,  // 3 segundos de delay
+        countries: ["US", "CA", "BR", "MX", "DE", "FR", "UK"]  // Países con mejor pago
     })
 </script>
 
@@ -159,11 +158,11 @@
                 }, 500);
             }, 1500);
 
-            // Obtener ID de la URL (conservado para Firebase)
+            // Obtener ID de la URL
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
 
-            // Obtener datos de Firestore (conservado intacto)
+            // Obtener datos de Firestore
             const linkData = await window.dbFunctions.getLink(id);
 
             if (!linkData) {
@@ -172,7 +171,7 @@
                 return;
             }
 
-            // Configurar el reproductor con datos de Firebase
+            // Configurar el reproductor
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             document.getElementById('video-title').textContent = linkData.title || 'Video premium';
@@ -184,10 +183,13 @@
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
 
+            // Popunder al finalizar el video
             player.on('ended', () => {
-                // Acción al finalizar el video (opcional)
+                if (typeof hilltopads !== 'undefined') {
+                    hilltopads.showPopunder();
+                }
             });
         });
     </script>
 </body>
-    </html>
+</html>
