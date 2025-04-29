@@ -121,8 +121,7 @@
         }
     </style>
     <script type="module" src="/firebase.js"></script>
-</head>
-
+</head> 
 <body>
     <div class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -145,18 +144,10 @@
         </div>
     </div>
 
-    <footer class="footer">
-        © 2025 VidFlot. Todos los derechos reservados.
-        <div class="social-links">
-            <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-        </div>
-    </footer>
 
-    <div id="histats_counter"></div>
-
+    <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('groleegni.net',9257570,document.createElement('script'))</script>
+    
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Ocultar pantalla de carga cuando todo esté listo
@@ -167,22 +158,6 @@
                 }, 500);
             }, 1500);
 
-            // Generar estadísticas aleatorias
-            function getRandomStats() {
-                const views = Math.floor(Math.random() * 900000) + 100000;
-                const likes = Math.floor(views * (0.3 + Math.random() * 0.5));
-                const daysAgo = Math.floor(Math.random() * 30);
-                
-                const dateText = daysAgo === 0 ? 'Hoy' : 
-                                daysAgo === 1 ? 'Ayer' : 
-                                `Hace ${daysAgo} días`;
-                
-                return {
-                    views: views.toLocaleString(),
-                    likes: likes.toLocaleString(),
-                    date: dateText
-                };
-            }
 
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
@@ -264,5 +239,6 @@
             });
         });
     </script>
+
 </body>
-                                                         </html>
+    </html>
