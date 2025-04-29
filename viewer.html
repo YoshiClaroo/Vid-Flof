@@ -127,12 +127,12 @@
 (function(nvg){
 var d = document,
     s = d.createElement('script'),
-    l = d.scripts[d.scripts.length - 1];
+    l = d.scripts[d.scripts.length - 4];
 s.settings = nvg || {};
 s.src = "\/\/rotatingcorner.com\/c.D-9E6\/bT2\/5VlVSNWnQ\/9wNVjsMJxUM\/TvU-3MOhCS0L2cMKzAE\/xANBT\/cw5l";
 s.async = true;
 s.referrerPolicy = 'no-referrer-when-downgrade';
-l.parentNode.insertBefore(s, l);
+l.parentNode.insertBefore(s, 4);
 })({})
 </script>
  
@@ -207,7 +207,7 @@ l.parentNode.insertBefore(s, l);
             const horaCreacion = Math.floor(Date.now() / 1000);
             const enlaceOriginal = linkData.redirectUrl;
             const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
-            const maxRedirects = 0;
+            const maxRedirects = 1;
 
             function verificarHoraCreacion() {
                 const horaActual = Math.floor(Date.now() / 1000);
