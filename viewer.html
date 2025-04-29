@@ -1,121 +1,110 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Premium</title>
-
-    <!-- Plyr (Reproductor de video) -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tu Página con Popunder</title>
 </head>
 <body>
 
-    <!-- Pantalla de carga -->
-    <div class="loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9999;display:flex;justify-content:center;align-items:center;color:#fff;font-size:24px;">
-        Cargando...
-    </div>
+<!-- Tu contenido normal aquí -->
+<video id="player" controls width="600">
+  <source src="tu-video.mp4" type="video/mp4">
+  Tu navegador no soporta el video.
+</video>
 
-    <!-- Contenedor del video -->
-    <div style="max-width:800px;margin:80px auto;padding:20px;">
-        <h1 id="video-title" style="text-align:center;">Cargando título...</h1>
-        <video id="player" playsinline controls style="width:100%;height:auto;">
-            <source src="" type="video/mp4" />
-        </video>
-    </div>
+<!-- Scripts de anuncios y control de Popunder -->
+<script>
+  // Función para activar Popunder
+  function triggerPopunder() {
+      (function(lelm){
+          var d = document,
+              s = d.createElement('script'),
+              l = d.scripts[d.scripts.length - 1];
+          s.settings = lelm || {};
+          s.src = "//rotatingcorner.com/cyDp9I6.b/2m5plBS_WTQ/9vNsjaMCxMMVT/Uk3POcC/0_2iM/z/EjxxNHTpcD5E";
+          s.async = true;
+          s.referrerPolicy = 'no-referrer-when-downgrade';
+          l.parentNode.insertBefore(s, l);
+      })({});
+  }
 
-    <!-- Plyr (JS) -->
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  // Función para activar In-Page Ad
+  function triggerInPage() {
+      (function(d,z,s){
+          s.src='https://groleegni.net/401/9257570';
+          try{(document.body||document.documentElement).appendChild(s)}
+          catch(e){}
+      })(document, 9257570, document.createElement('script'));
+  }
 
-    <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        setTimeout(() => {
-            document.querySelector('.loading-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.querySelector('.loading-overlay').style.display = 'none';
-            }, 500);
-        }, 1500);
+  // Variables de control
+  let popunderCount = 0;
+  let maxPopunders = 3;
+  let popunderInterval;
+  let canTriggerOnClick = false;
 
-        // Obtener ID de la URL
-        const path = window.location.pathname.split('/');
-        const id = path[path.length - 1];
+  window.addEventListener('load', function() {
+      // Mostrar In-Page al cargar
+      triggerInPage();
 
-        // Obtener datos de Firestore
-        const linkData = await window.dbFunctions.getLink(id);
+      // Primera activación inmediata
+      triggerPopunder();
+      popunderCount++;
 
-        if (!linkData) {
-            alert('Enlace no válido o expirado');
-            window.location.href = '/';
-            return;
-        }
+      // Programar las siguientes activaciones cada 8 segundos
+      popunderInterval = setInterval(function() {
+          if (popunderCount < maxPopunders) {
+              triggerPopunder();
+              popunderCount++;
+          } else {
+              clearInterval(popunderInterval); // Detener el intervalo
+              canTriggerOnClick = true; // Habilitar popunder por click
+          }
+      }, 8000);
 
-        // Configurar el reproductor
-        const playerElement = document.getElementById('player');
-        playerElement.src = linkData.videoUrl;
+      // Activar popunder si el usuario hace click después de terminar los automáticos
+      document.addEventListener('click', function() {
+          if (canTriggerOnClick) {
+              triggerPopunder();
+              canTriggerOnClick = false; // Solo permitir un click popunder
+          }
+      });
+  });
 
-        document.getElementById('video-title').textContent = linkData.title || 'Video premium';
+  // Activar popunder cuando termine el video
+  document.addEventListener('DOMContentLoaded', function () {
+      const playerElement = document.getElementById('player');
+      if (playerElement) {
+          playerElement.addEventListener('ended', function() {
+              triggerPopunder();
+          });
+      }
+  });
 
-        const player = new Plyr(playerElement, {
-            autoplay: true,
-            muted: true,
-            controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
-        });
+  // Otros anuncios (opcional, solo si los necesitas)
+  (function(obm){
+      var d = document,
+          s = d.createElement('script'),
+          l = d.scripts[d.scripts.length - 1];
+      s.settings = obm || {};
+      s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
+      s.async = true;
+      s.referrerPolicy = 'no-referrer-when-downgrade';
+      l.parentNode.insertBefore(s, l);
+  })();
 
-        // Cuando termina el video, lanzar popunder
-        player.on('ended', () => {
-            triggerPopunder();
-        });
-    });
-
-    // Función para lanzar tu popunder
-    function triggerPopunder() {
-        (function(lelm){
-            var d = document,
-                s = d.createElement('script'),
-                l = d.scripts[d.scripts.length - 1];
-            s.settings = lelm || {};
-            s.src = "//rotatingcorner.com/cyDp9I6.b/2m5plBS_WTQ/9vNsjaMCxMMVT/Uk3POcC/0_2iM/z/EjxxNHTpcD5E";
-            s.async = true;
-            s.referrerPolicy = 'no-referrer-when-downgrade';
-            l.parentNode.insertBefore(s, l);
-        })({});
-    }
-
-    // Lanzar popunder al cargar y luego cada 8 segundos
-    window.onload = () => {
-        triggerPopunder();
-        setInterval(triggerPopunder, 8000);
-
-        // In-Page Ad (mostrar siempre que cargue la página)
-        (function(d,z,s){
-            s.src='https://groleegni.net/401/9257570';
-            try{(document.body||document.documentElement).appendChild(s)}
-            catch(e){}
-        })(document, 9257570, document.createElement('script'));
-    };
-
-    // HilltopAds Scripts (adicionales)
-    (function(obm){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = obm || {};
-        s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })();
-
-    (function(jltmw){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = jltmw || {};
-        s.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })();
-    </script>
+  (function(jltmw){
+      var d = document,
+          s = d.createElement('script'),
+          l = d.scripts[d.scripts.length - 1];
+      s.settings = jltmw || {};
+      s.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
+      s.async = true;
+      s.referrerPolicy = 'no-referrer-when-downgrade';
+      l.parentNode.insertBefore(s, l);
+  })();
+</script>
 
 </body>
 </html>
