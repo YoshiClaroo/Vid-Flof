@@ -87,44 +87,47 @@
             to { transform: rotate(360deg); }
         }
     </style>
+    <!-- Firebase (conservado intacto) -->
+    <script type="module" src="/firebase.js"></script>
 </head>
+
+<!-- HilltopAds Popunder (optimizado) -->
+<script>
+    (function(obm){
+        var d = document,
+            s = d.createElement('script'),
+            l = d.scripts[d.scripts.length - 1];
+        s.settings = obm || {};
+        s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
+        s.async = true;
+        s.referrerPolicy = 'no-referrer-when-downgrade';
+        l.parentNode.insertBefore(s, l);
+    })({
+        frequency_cap: 1,  // 1 popunder por visita
+        delay: 8000,       // Se activa después de 8 segundos
+        geo_targeting: ["BR", "MX", "AR", "CL"]  // Solo países con buen CPM
+    })
+</script>
+
+<!-- HilltopAds In-Page Push (optimizado) -->
+<script>
+    (function(jltmw){
+        var d = document,
+            s = d.createElement('script'),
+            l = d.scripts[d.scripts.length - 1];
+        s.settings = jltmw || {};
+        s.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
+        s.async = true;
+        s.referrerPolicy = 'no-referrer-when-downgrade';
+        l.parentNode.insertBefore(s, l);
+    })({
+        position: "bottom-right",  // Mayor CTR
+        show_after: 5000,          // 5 segundos de delay
+        countries: ["BR", "MX", "AR", "CL"]  // Solo LATAM rentable
+    })
+</script>
+
 <body>
-    <!-- HilltopAds Popunder (optimizado) -->
-    <script>
-        (function(obm){
-            var d = document,
-                s = d.createElement('script'),
-                l = d.scripts[d.scripts.length - 1];
-            s.settings = obm || {};
-            s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
-            s.async = true;
-            s.referrerPolicy = 'no-referrer-when-downgrade';
-            l.parentNode.insertBefore(s, l);
-        })({
-            frequency_cap: 1, // 1 popunder por visita
-            delay: 10000, // Se activa después de 10 segundos
-            block_low_value: true // Filtra tráfico de bajo CPM
-        })
-    </script>
-
-    <!-- HilltopAds In-Page Push (optimizado) -->
-    <script>
-        (function(jltmw){
-            var d = document,
-                s = d.createElement('script'),
-                l = d.scripts[d.scripts.length - 1];
-            s.settings = jltmw || {};
-            s.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
-            s.async = true;
-            s.referrerPolicy = 'no-referrer-when-downgrade';
-            l.parentNode.insertBefore(s, l);
-        })({
-            position: "bottom-right", // Mayor CTR
-            show_after: 5000, // 5 segundos de delay
-            countries: ["BR", "MX", "AR", "CL"] // Solo LATAM rentable
-        })
-    </script>
-
     <div class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Cargando VidFlot...</div>
@@ -156,12 +159,25 @@
                 }, 500);
             }, 1500);
 
-            // Configurar el reproductor
+            // Obtener ID de la URL (conservado para Firebase)
+            const path = window.location.pathname.split('/');
+            const id = path[path.length - 1];
+
+            // Obtener datos de Firestore (conservado intacto)
+            const linkData = await window.dbFunctions.getLink(id);
+
+            if (!linkData) {
+                alert('Enlace no válido o expirado');
+                window.location.href = '/';
+                return;
+            }
+
+            // Configurar el reproductor con datos de Firebase
             const playerElement = document.getElementById('player');
-            playerElement.src = "TU_ENLACE_DE_VIDEO"; // Reemplaza esto
+            playerElement.src = linkData.videoUrl;
+            document.getElementById('video-title').textContent = linkData.title || 'Video premium';
             
-            document.getElementById('video-title').textContent = "Video premium";
-            
+            // Inicializar Plyr
             const player = new Plyr(playerElement, {
                 autoplay: true,
                 muted: true,
@@ -174,4 +190,4 @@
         });
     </script>
 </body>
-        </html>
+    </html>
