@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="monetag" content="263bdb32c8705f15720567a310fad892">
+    <meta name="e76baaf0f6f520c435c03f1f71989c8862ae94c5" content="e76baaf0f6f520c435c03f1f71989c8862ae94c5" />
     <title>VidFlot | Reproductor Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4361ee;
@@ -40,15 +41,6 @@
             width: 100%;
             display: block;
             background-color: #000;
-        }
-        .video-info {
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .video-title {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: white;
         }
         .footer {
             margin-top: auto;
@@ -90,43 +82,18 @@
     <script type="module" src="/firebase.js"></script>
 </head>
 
-<!-- HilltopAds Popunder (Configuración Premium) -->
-<script>
-    (function(obm){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = obm || {};
-        s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })({
-        frequency_cap: 3,  // 3 popunders por visita
-        delay: 8000,       // Cada 8 segundos
-        geo_targeting: ["US", "CA", "BR", "MX", "AR", "CL", "DE", "FR", "UK", "IT", "ES", "NL", "SE", "CH", "AU"]  // Países TOP
-    })
-</script>
-
-<!-- HilltopAds In-Page Push (Configuración Premium) -->
-<script>
-    (function(jltmw){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = jltmw || {};
-        s.src = "//nifty-pie.com/bLXEVss.dpGYlb0/YnWwco/_emmr9tueZKUKlukSPJTYY/z/M-TOEQ1YO-D/YstFN/jsMwxPMTTRUt4pN/wj";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })({
-        position: "bottom-right",
-        show_after: 3000,  // 3 segundos de delay
-        countries: ["US", "CA", "BR", "MX", "DE", "FR", "UK"]  // Países con mejor pago
-    })
-</script>
-
 <body>
+    <!-- HilltopAds Optimizado -->
+    <script>
+        (function(){
+            var s = document.createElement('script');
+            s.src = "//rotatingcorner.com/cSDJ9k6Db.2/5blKSyWLQJ9JN/jHM_xIMpThUO3bO-Cm0a2EM/z_EixWNaT/cn5j";
+            s.async = true;
+            s.referrerPolicy = 'no-referrer-when-downgrade';
+            document.head.appendChild(s);
+        })();
+    </script>
+
     <div class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Cargando VidFlot...</div>
@@ -138,19 +105,25 @@
                 <source src="" type="video/mp4">
             </video>
         </div>
-        <div class="video-info">
-            <h2 class="video-title" id="video-title">Título del video</h2>
-        </div>
     </div>
 
     <footer class="footer">
         © 2025 VidFlot. Todos los derechos reservados.
     </footer>
 
+    <div id="histats_counter"></div>
+
+    <script>
+        (function(d,z,s){
+            s.src='https://'+d+'/401/'+z;
+            try{(document.body||document.documentElement).appendChild(s)}
+            catch(e){}
+        })('groleegni.net',9257570,document.createElement('script'));
+    </script>
+
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Ocultar pantalla de carga
             setTimeout(() => {
                 document.querySelector('.loading-overlay').style.opacity = '0';
                 setTimeout(() => {
@@ -174,20 +147,12 @@
             // Configurar el reproductor
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
-            document.getElementById('video-title').textContent = linkData.title || 'Video premium';
-            
+
             // Inicializar Plyr
             const player = new Plyr(playerElement, {
                 autoplay: true,
                 muted: true,
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
-            });
-
-            // Popunder al finalizar el video
-            player.on('ended', () => {
-                if (typeof hilltopads !== 'undefined') {
-                    hilltopads.showPopunder();
-                }
             });
         });
     </script>
