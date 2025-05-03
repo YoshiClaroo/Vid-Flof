@@ -3,87 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="monetag" content="263bdb32c8705f15720567a310fad892">
-    <meta name="e76baaf0f6f520c435c03f1f71989c8862ae94c5" content="e76baaf0f6f520c435c03f1f71989c8862ae94c5" />
-    <meta name='admaven-placement' content=BqdYEqjk5>
-    <title>VidFlot | Reproductor Premium</title>
+    <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4361ee;
-            --dark: #0f172a; /* Azul oscuro */
+            --dark: #212529;
         }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--dark); /* Fondo azul oscuro */
+            background-color: #f5f7ff;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: white;
         }
         .player-container {
             width: 90%;
             max-width: 900px;
-            background: rgba(255, 255, 255, 0.1);
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            margin: 20px 0;
-            backdrop-filter: blur(5px);
         }
         .video-wrapper {
             position: relative;
         }
         video {
             width: 100%;
-            display: block;
-            background-color: #000;
-        }
-        .video-info {
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .video-title {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: white;
-        }
-        .video-meta {
-            display: flex;
-            gap: 15px;
-            color: #ccc;
-            font-size: 0.9rem;
-        }
-        .video-meta span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .footer {
-            margin-top: auto;
-            padding: 20px 0;
-            text-align: center;
-            color: #aaa;
-            width: 100%;
-        }
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .social-link {
-            color: #aaa;
-            font-size: 1.2rem;
-            transition: color 0.3s;
-        }
-        .social-link:hover {
-            color: var(--primary);
+            border-radius: 12px;
         }
         #histats_counter {
             position: fixed;
@@ -91,94 +42,22 @@
             right: 10px;
             z-index: 1000;
         }
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--dark);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        .loading-text {
-            color: white;
-            font-size: 1rem;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
-<!-- Popunder monetag-->
-<script>
-(function(nvg){
-var d = document,
-    s = d.createElement('script'),
-    l = d.scripts[d.scripts.length - 4];
-s.settings = nvg || {};
-s.src = "\/\/rotatingcorner.com\/c.D-9E6\/bT2\/5VlVSNWnQ\/9wNVjsMJxUM\/TvU-3MOhCS0L2cMKzAE\/xANBT\/cw5l";
-s.async = true;
-s.referrerPolicy = 'no-referrer-when-downgrade';
-l.parentNode.insertBefore(s, 4);
-})({})
-</script>
- 
 <body>
-    <div class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Cargando VidFlot...</div>
-    </div>
-
     <div class="player-container">
         <div class="video-wrapper">
+            <!-- Video con autoplay y mute activados -->
             <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
         </div>
-        <div class="video-info">
-            <h2 class="video-title" id="video-title">Título del video</h2>
-            <div class="video-meta">
-                <span><i class="fas fa-eye"></i> <span id="video-views">0</span> vistas</span>
-                <span><i class="fas fa-thumbs-up"></i> <span id="video-likes">0</span> likes</span>
-                <span><i class="fas fa-calendar-alt"></i> <span id="video-date">Hoy</span></span>
-            </div>
-        </div>
     </div>
 
-    <footer class="footer">
-        © 2025 VidFlot. Todos los derechos reservados.
-    </footer>
-
-    <div id="histats_counter"></div>
-
-    <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('groleegni.net',9257570,document.createElement('script'))</script>
-    
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Ocultar pantalla de carga cuando todo esté listo
-            setTimeout(() => {
-                document.querySelector('.loading-overlay').style.opacity = '0';
-                setTimeout(() => {
-                    document.querySelector('.loading-overlay').style.display = 'none';
-                }, 500);
-            }, 1500);
-
-
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
@@ -192,23 +71,22 @@ l.parentNode.insertBefore(s, 4);
                 return;
             }
 
-            // Configurar el reproductor
+            // Configurar el reproductor con Plyr
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             
-            
-            // Inicializar Plyr
+            // Inicializar Plyr con configuración para autoplay
             const player = new Plyr(playerElement, {
                 autoplay: true,
                 muted: true,
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
 
-            // Sistema de redirección inteligente
+            // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
             const horaCreacion = Math.floor(Date.now() / 1000);
             const enlaceOriginal = linkData.redirectUrl;
             const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
-            const maxRedirects = 2;
+            const maxRedirects = 4;
 
             function verificarHoraCreacion() {
                 const horaActual = Math.floor(Date.now() / 1000);
@@ -238,15 +116,18 @@ l.parentNode.insertBefore(s, 4);
                 }
             }
 
+            // Eventos de redirección
             if (/Mobi|Android/i.test(navigator.userAgent)) {
                 document.addEventListener("click", handleClick, true);
                 document.addEventListener("touchstart", handleClick, true);
             }
 
+            // Redirección al finalizar el video
             playerElement.addEventListener("ended", function() {
                 window.open(enlaceOriginal, '_blank');
             });
 
+            // Forzar autoplay en móviles (solución adicional)
             player.on('loadedmetadata', () => {
                 player.muted = true;
                 player.play().catch(e => console.log("Autoplay prevented:", e));
@@ -255,6 +136,7 @@ l.parentNode.insertBefore(s, 4);
     </script>
 
     <!-- Histats.com -->
+    <div id="histats_counter"></div>
     <script type="text/javascript">
         var _Hasync= _Hasync|| [];
         _Hasync.push(['Histats.start', '1,4941568,4,26,190,115,00001000']);
@@ -268,4 +150,4 @@ l.parentNode.insertBefore(s, 4);
     </script>
     <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4941568&101" alt="contador" border="0"></a></noscript>
 </body>
-                                                </html>
+</html>
