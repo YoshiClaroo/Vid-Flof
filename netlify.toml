@@ -2,3 +2,8 @@
   from = "/play/*"
   to = "/viewer.html"
   status = 200
+
+[[headers]]
+  for = "/ads.txt"
+  [headers.values]
+    "Content-Type" = "text/plain"
