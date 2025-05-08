@@ -4,15 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="monetag" content="263bdb32c8705f15720567a310fad892">
-    <meta name='admaven-placement' content=BqdYEqjk5>
-    <meta name="clckd" content="18300a7a3856ac8b345dd6d073ed7920" />
-    <title>Generador de Enlaces</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <meta name='admaven-placement' content="BqdYEqjk5">
+    <meta name="clckd" content="18300a7a3856ac8b345dd6d073ed7920">
+    <title>Generador de Enlaces Profesional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #4361ee;
+            --primary-dark: #3a56d4;
             --dark: #212529;
             --light: #f8f9fa;
+            --gray: #6c757d;
+            --red: #ff6b6b;
         }
         body {
             font-family: 'Poppins', sans-serif;
@@ -20,9 +24,12 @@
             margin: 0;
             padding: 20px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            position: relative;
+            padding-bottom: 100px;
         }
         .container {
             background: white;
@@ -31,11 +38,13 @@
             padding: 30px;
             width: 100%;
             max-width: 500px;
+            margin-bottom: 30px;
         }
         h1 {
             color: var(--primary);
             text-align: center;
             margin-top: 0;
+            font-weight: 600;
         }
         .input-group {
             margin-bottom: 20px;
@@ -52,6 +61,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            box-sizing: border-box;
         }
         button {
             background: var(--primary);
@@ -62,10 +72,12 @@
             cursor: pointer;
             width: 100%;
             font-size: 16px;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            font-weight: 500;
         }
         button:hover {
-            background: #3a56d4;
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
         #result {
             margin-top: 20px;
@@ -78,6 +90,7 @@
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
+            box-sizing: border-box;
         }
         .action-buttons {
             display: flex;
@@ -87,14 +100,100 @@
             flex: 1;
         }
         .action-buttons button:last-child {
-            background: #6c757d;
+            background: var(--gray);
+        }
+        .action-buttons button:last-child:hover {
+            background: #5a6268;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--gray);
+            font-size: 14px;
+            width: 100%;
+            position: absolute;
+            bottom: 20px;
+        }
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Botón de Donación */
+        .donate-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--red);
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 100;
+            animation: pulse 2s infinite;
+        }
+        .donate-btn:hover {
+            background: #ff5252;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Modal Términos y Condiciones */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        .modal h2 {
+            color: var(--primary);
+            margin-top: 0;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Generador de Enlaces</h1>
+        <h1>Generador de Enlaces Profesional</h1>
+        <p style="text-align: center; color: var(--gray); margin-bottom: 20px;">Convierte enlaces de videos en enlaces acortados con redirección</p>
         
         <div class="input-group">
             <label for="videoUrl">URL del Video (.mp4)</label>
@@ -107,11 +206,6 @@
         </div>
         
         <button id="generateBtn">Generar Enlace</button>
-
-        <!-- Banner A-Ads (300x250) - Versión optimizada -->
-<div class="banner-container" style="display: flex; justify-content: center; margin: 20px 0; min-height: 250px;">
-    
-</div>
         
         <div id="result">
             <input type="text" id="generatedLink" readonly>
@@ -122,7 +216,39 @@
         </div>
     </div>
 
+    <!-- Botón de Donación -->
+    <div class="donate-btn" id="donateBtn" title="Apoya este proyecto">
+        <i class="fas fa-heart"></i>
+    </div>
+
+    <!-- Modal de Donación -->
+    <div class="modal" id="donateModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>¡Apoya este proyecto! ❤️</h2>
+            <p>Si este generador de enlaces te ha sido útil, considera hacer una donación para ayudar a mantener el servicio.</p>
+            <div style="margin: 20px 0;">
+                <h3>Métodos de pago:</h3>
+                <ul>
+                    <li><strong>PayPal:</strong> paypal.me/tuusuario</li>
+                    <li><strong>Cripto (BTC):</strong> 1AbCdEfGhIjKlMnOpQrStUvWxYz</li>
+                    <li><strong>Binance Pay:</strong> 123456789</li>
+                </ul>
+            </div>
+            <p>¡Gracias por tu apoyo!</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        &copy; 2025 Generador de Enlaces. Todos los derechos reservados.
+        <a href="terminos.html">Términos de Uso</a>
+        <a href="condiciones.html">Privacidad</a>
+        <a href="https://github.com/tuusuario" target="_blank">GitHub</a>
+    </footer>
+
     <script>
+        // Generador de enlaces
         document.getElementById("generateBtn").addEventListener("click", async () => {
             const videoUrl = document.getElementById("videoUrl").value;
             const redirectUrl = document.getElementById("redirectUrl").value;
@@ -144,7 +270,6 @@
             } catch (error) {
                 alert("Error al guardar: " + error.message);
             }
-
         });
         
         document.getElementById("copyBtn").addEventListener("click", () => {
@@ -159,6 +284,8 @@
             document.getElementById("redirectUrl").value = "";
             document.getElementById("result").style.display = "none";
         });
-    </script>
-</body>
-</html>
+
+        // Donación y Términos
+        const donateBtn = document.getElementById("donateBtn");
+        const donateModal = document.getElementById("donateModal");
+        const termsLink = document.querySelector('a[href="terminos.html
