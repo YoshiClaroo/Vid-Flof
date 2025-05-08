@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donaciones - Generador de Enlaces</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --crypto-bg: #f0f8ff;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f7ff;
+            margin: 0;
+            padding: 20px;
+            color: var(--dark);
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: var(--primary);
+            text-align: center;
+        }
+        .crypto-box {
+            background: var(--crypto-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            position: relative;
+        }
+        .crypto-box h2 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .crypto-address {
+            font-family: monospace;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            word-break: break-all;
+            margin: 15px 0;
+        }
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .copy-btn:hover {
+            background: #3a56d4;
+        }
+        .copy-btn.copied {
+            background: #4CAF50;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-heart"></i> Apoya este Proyecto</h1>
+        <p style="text-align: center;">Tu donación ayuda a mantener y mejorar el servicio. ¡Gracias por tu apoyo!</p>
+        
+        <!-- Bitcoin -->
+        <div class="crypto-box">
+            <h2><i class="fab fa-bitcoin"></i> Bitcoin (BTC)</h2>
+            <div class="crypto-address" id="btc-address">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+            <button class="copy-btn" onclick="copyToClipboard('btc-address', this)">Copiar Dirección</button>
+        </div>
+        
+        <!-- Ethereum -->
+        <div class="crypto-box">
+            <h2><i class="fab fa-ethereum"></i> Ethereum (ETH)</h2>
+            <div class="crypto-address" id="eth-address">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</div>
+            <button class="copy-btn" onclick="copyToClipboard('eth-address', this)">Copiar Dirección</button>
+        </div>
+        
+        <!-- USDT -->
+        <div class="crypto-box">
+            <h2><i class="fas fa-coins"></i> USDT (TRC20)</h2>
+            <div class="crypto-address" id="usdt-address">TNSqRL1dWZQmHv6UoiDpGgJf7jBZt7uXh6</div>
+            <button class="copy-btn" onclick="copyToClipboard('usdt-address', this)">Copiar Dirección</button>
+        </div>
+        
+        <p style="text-align: center; font-style: italic;">También puedes donar via <a href="https://paypal.me/tuusuario" target="_blank">PayPal</a></p>
+    </div>
+
+    <footer>
+        &copy; 2025 Generador de Enlaces | <a href="index.html">Volver al Inicio</a>
+    </footer>
+
+    <script>
+        function copyToClipboard(id, btn) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.textContent = '¡Copiado!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.textContent = 'Copiar Dirección';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
