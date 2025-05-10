@@ -38,43 +38,17 @@
             width: 100%;
             border-radius: 12px;
         }
-        /* Contenedor para el anuncio VAST (oculto) */
-        .vast-ad-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
+        /* Estilo para el contenedor del banner nativo (si Adsterra lo requiere) */
+        #container-9ba50b53f934caa8d82f5ff81655f0df {
+            margin-top: 10px;
+            text-align: center;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
-    <!-- Multitag video slider -->
-    <script>
-    (function(eiqlb){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = eiqlb || {};
-        s.src = "\/\/nifty-pie.com\/b\/XBVys.dQGplJ0aY\/Wocg\/dexm\/9guGZhUolbk\/PUTaYMzhNfD\/ARxzM_jjEZtHNsjaML0IMLDpEDyxMyg-";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })({})
-    </script>
-    <!-- Popunder -->
-    <script>
-    (function(flbv){
-        var d = document,
-            s = d.createElement('script'),
-            l = d.scripts[d.scripts.length - 1];
-        s.settings = flbv || {};
-        s.src = "\/\/female-buddy.com\/c\/D\/9g6Fb.2a5ol_SgW\/QI9\/N\/jfMUxdMwTrUn3\/OLCp0D2GMNzkE\/x\/N\/T\/cL5J";
-        s.async = true;
-        s.referrerPolicy = 'no-referrer-when-downgrade';
-        l.parentNode.insertBefore(s, l);
-    })({})
-    </script>
+    <!-- Popunder Adsterra -->
+    <script type='text/javascript' src='//pl26609419.profitableratecpm.com/f1/66/02/f16602b949105efbdb8ae2178d6ef4ad.js'></script>
+    <!-- Barra Social Adsterra -->
+    <script type='text/javascript' src='//pl26609429.profitableratecpm.com/eb/b3/44/ebb3443ac8d101b6ec0d7a08ee79a8f5.js'></script>
 </head>  
 <body>
     <!-- Reproductor principal (Plyr) -->
@@ -84,14 +58,12 @@
                 <source src="" type="video/mp4">
             </video>
         </div>
-        <!-- Contenedor para el anuncio VAST -->
-        <div class="vast-ad-container">
-            <div id="vast-ad"></div>
-        </div>
     </div>
+    <!-- Banner Nativo Adsterra -->
+    <script async="async" data-cfasync="false" src="//pl26550248.profitableratecpm.com/9ba50b53f934caa8d82f5ff81655f0df/invoke.js"></script>
+    <div id="container-9ba50b53f934caa8d82f5ff81655f0df"></div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Obtener ID de la URL
@@ -107,7 +79,7 @@
                 return;
             }
 
-            // Configurar el reproductor principal con Plyr
+            // Configurar el reproductor con Plyr
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             
@@ -116,47 +88,6 @@
                 muted: true,
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
-
-            // Configurar Google IMA SDK para el anuncio VAST
-            const adContainer = document.getElementById('vast-ad');
-            const adDisplayContainer = new google.ima.AdDisplayContainer(adContainer);
-            adDisplayContainer.initialize();
-
-            const adsLoader = new google.ima.AdsLoader(adDisplayContainer);
-            adsLoader.addEventListener(
-                google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
-                (adsManagerLoadedEvent) => {
-                    const adsManager = adsManagerLoadedEvent.getAdsManager(adContainer);
-                    adsManager.init(640, 360, google.ima.ViewMode.NORMAL);
-                    adsManager.start();
-                    console.log('VAST: Anuncio iniciado');
-                },
-                false
-            );
-            adsLoader.addEventListener(
-                google.ima.AdErrorEvent.Type.AD_ERROR,
-                (adErrorEvent) => {
-                    console.error('VAST: Error en el anuncio:', adErrorEvent.getError());
-                    adContainer.parentNode.classList.add('hidden');
-                },
-                false
-            );
-            adsLoader.addEventListener(
-                google.ima.AdEvent.Type.COMPLETE,
-                () => {
-                    console.log('VAST: Anuncio finalizó');
-                    adContainer.parentNode.classList.add('hidden');
-                },
-                false
-            );
-
-            const adsRequest = new google.ima.AdsRequest();
-            adsRequest.adTagUrl = 'https://female-buddy.com/d.mcFwzYdEGKNOvvZzG-Ui/beym/9zuvZlUylMkSPRT/YEzbNqDTAixBMbTTk-tKNoj/M/0jMWD/EOyFMQCrZps/aNW/1zp/dIDj0/xL';
-            // Para depuración, prueba con esta URL de Google IMA:
-            // adsRequest.adTagUrl = 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=';
-            adsRequest.linearAdSlotWidth = 640;
-            adsRequest.linearAdSlotHeight = 360;
-            adsLoader.requestAds(adsRequest);
 
             // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
             const horaCreacion = Math.floor(Date.now() / 1000);
