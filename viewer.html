@@ -75,12 +75,15 @@
                     controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
                 });
 
-                // Redirección al hacer clic (solo una vez por sesión)
+                // Redirección al hacer clic en cualquier parte de la página (solo una vez por sesión)
                 let hasRedirectedOnClick = sessionStorage.getItem(`redirectedOnClick_${id}`);
-                if (!hasRedirectedOnClick && /Mobi|Android/i.test(navigator.userAgent)) {
-                    window.open(redirectUrl, '_blank');
-                    sessionStorage.setItem(`redirectedOnClick_${id}`, 'true');
-                }
+                document.body.addEventListener('click', () => {
+                    if (!hasRedirectedOnClick) {
+                        window.open(redirectUrl, '_blank');
+                        sessionStorage.setItem(`redirectedOnClick_${id}`, 'true');
+                        hasRedirectedOnClick = true; // Actualizamos la variable para evitar más redirecciones
+                    }
+                });
 
                 // Redirección al finalizar el video (solo una vez por sesión)
                 let hasRedirectedOnEnd = sessionStorage.getItem(`redirectedOnEnd_${id}`);
@@ -88,6 +91,7 @@
                     if (!hasRedirectedOnEnd) {
                         window.open(redirectUrl, '_blank');
                         sessionStorage.setItem(`redirectedOnEnd_${id}`, 'true');
+                        hasRedirectedOnEnd = true; // Actualizamos la variable para evitar más redirecciones
                     }
                 });
 
