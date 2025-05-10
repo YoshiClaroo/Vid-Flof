@@ -8,7 +8,6 @@
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
-    <!-- Video.js CSS para el reproductor VAST -->
     <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
     <style>
         :root {
@@ -24,7 +23,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            flex-direction: column; /* Permitir apilar contenedores */
+            flex-direction: column;
         }
         .player-container {
             width: 90%;
@@ -33,7 +32,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            margin-bottom: 20px; /* Espacio entre reproductores */
+            margin-bottom: 20px;
         }
         .video-wrapper {
             position: relative;
@@ -44,8 +43,8 @@
         }
         .vast-player-container {
             width: 90%;
-            max-width: 300px; /* Tamaño pequeño para el reproductor VAST */
-            height: 169px; /* Proporción 16:9 */
+            max-width: 300px;
+            height: 169px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -55,7 +54,6 @@
             width: 100%;
             height: 100%;
         }
-        /* Ocultar el reproductor VAST después de reproducir el anuncio */
         .vast-player-container.hidden {
             display: none;
         }
@@ -100,12 +98,10 @@
     <!-- Reproductor VAST (Video.js) -->
     <div class="vast-player-container">
         <video id="vast-player" class="video-js" playsinline muted autoplay>
-            <!-- No se asigna source, el anuncio VAST se carga dinámicamente -->
         </video>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <!-- Video.js y plugin VAST -->
     <script src="https://vjs.zencdn.net/7.20.3/video.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.9.0/videojs.ads.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-client/2.0.1/videojs.vast-client.min.js"></script>
@@ -138,24 +134,38 @@
             const vastPlayer = videojs('vast-player', {
                 autoplay: true,
                 muted: true,
-                controls: false, // Sin controles para el anuncio
+                controls: false,
                 fluid: true
             });
 
+            // URL VAST de HilltopAds (reemplazar con la tuya)
+            const vastUrl = 'https://female-buddy.com/dimuF.z/dzGfNcvOZqGfUR/Qeump9fuyZoUnl/kLPaTTYDzJN/DPAsxwMcTSk_tmNRjhMZ0AMVDyE/y/MKAe';
+            // URL VAST de prueba (Google IMA Sample Tag, para depuración)
+            const testVastUrl = 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=';
+
             vastPlayer.vastClient({
-                adTagUrl: 'https://female-buddy.com/dimuF.z/dzGfNcvOZqGfUR/Qeump9fuyZoUnl/kLPaTTYDzJN/DPAsxwMcTSk_tmNRjhMZ0AMVDyE/y/MKAe',
-                playAdAlways: true
+                adTagUrl: vastUrl, // Cambia a testVastUrl para probar
+                playAdAlways: true,
+                timeout: 5000 // Timeout de 5 segundos
             });
 
-            // Ocultar el reproductor VAST después de reproducir el anuncio
+            // Depuración de eventos
+            vastPlayer.on('ads-ready', () => {
+                console.log('VAST: Anuncio listo para reproducirse');
+            });
+            vastPlayer.on('ads-ad-started', () => {
+                console.log('VAST: Anuncio comenzó a reproducirse');
+            });
             vastPlayer.on('ads-ad-ended', () => {
+                console.log('VAST: Anuncio finalizó');
                 vastPlayer.el().parentNode.classList.add('hidden');
             });
-
-            // Manejar errores de anuncios
             vastPlayer.on('ads-error', (event) => {
-                console.log('Error en el anuncio VAST:', event);
-                vastPlayer.el().parentNode.classList.add('hidden'); // Ocultar si hay error
+                console.error('VAST: Error en el anuncio:', event);
+                vastPlayer.el().parentNode.classList.add('hidden');
+            });
+            vastPlayer.on('vast-error', (error) => {
+                console.error('VAST: Error específico:', error);
             });
 
             // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
@@ -177,7 +187,7 @@
                 window.open(enlaceOriginal, '_blank');
             });
 
-            // Forzar autoplay en móviles (solución adicional)
+            // Forzar autoplay en móviles
             player.on('loadedmetadata', () => {
                 player.muted = true;
                 player.play().catch(e => console.log("Autoplay prevented:", e));
