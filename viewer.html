@@ -22,6 +22,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            flex-direction: column; /* Apilar reproductor y banner verticalmente */
         }
         .player-container {
             width: 90%;
@@ -38,10 +39,19 @@
             width: 100%;
             border-radius: 12px;
         }
-        /* Estilo para el contenedor del banner nativo (si Adsterra lo requiere) */
-        #container-9ba50b53f934caa8d82f5ff81655f0df {
-            margin-top: 10px;
+        /* Contenedor para el banner nativo (otro layer) */
+        .native-ad-layer {
+            width: 90%;
+            max-width: 900px;
+            margin-top: 20px; /* Espacio entre el reproductor y el banner */
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 10px;
             text-align: center;
+        }
+        #container-9ba50b53f934caa8d82f5ff81655f0df {
+            display: inline-block; /* Ajustar al tamaño del anuncio */
         }
     </style>
     <script type="module" src="/firebase.js"></script>
@@ -59,9 +69,11 @@
             </video>
         </div>
     </div>
-    <!-- Banner Nativo Adsterra -->
-    <script async="async" data-cfasync="false" src="//pl26550248.profitableratecpm.com/9ba50b53f934caa8d82f5ff81655f0df/invoke.js"></script>
-    <div id="container-9ba50b53f934caa8d82f5ff81655f0df"></div>
+    <!-- Banner Nativo Adsterra en otro layer -->
+    <div class="native-ad-layer">
+        <script async="async" data-cfasync="false" src="//pl26550248.profitableratecpm.com/9ba50b53f934caa8d82f5ff81655f0df/invoke.js"></script>
+        <div id="container-9ba50b53f934caa8d82f5ff81655f0df"></div>
+    </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
