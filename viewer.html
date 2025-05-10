@@ -3,65 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="galaksion-domain-verification" content="388fe2e7d40d2065757d36598cf72923a798343c2b5ed6a10e5657c417c6ce59" />
-    <meta name="referrer" content="no-referrer-when-downgrade" />
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
     <style>
-        :root {
-            --primary: #4361ee;
-            --dark: #212529;
-        }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f7ff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            flex-direction: column; /* Apilar reproductor y banner verticalmente */
+            background-color: #fff;
         }
         .player-container {
             width: 90%;
-            max-width: 900px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            max-width: 350px;
+            padding: 15px;
+            background: #fff;
         }
         .video-wrapper {
             position: relative;
         }
         video {
             width: 100%;
-            border-radius: 12px;
-        }
-        /* Contenedor para el banner nativo (otro layer) */
-        .native-ad-layer {
-            width: 90%;
-            max-width: 900px;
-            margin-top: 20px; /* Espacio entre el reproductor y el banner */
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 10px;
-            text-align: center;
-        }
-        #container-9ba50b53f934caa8d82f5ff81655f0df {
-            display: inline-block; /* Ajustar al tamaño del anuncio */
+            border-radius: 0;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
-    <!-- Popunder Adsterra -->
-    <script type='text/javascript' src='//pl26609419.profitableratecpm.com/f1/66/02/f16602b949105efbdb8ae2178d6ef4ad.js'></script>
-    <!-- Barra Social Adsterra -->
-    <script type='text/javascript' src='//pl26609429.profitableratecpm.com/eb/b3/44/ebb3443ac8d101b6ec0d7a08ee79a8f5.js'></script>
-</head>  
+</head>
 <body>
-    <!-- Reproductor principal (Plyr) -->
     <div class="player-container">
         <div class="video-wrapper">
             <video id="player" playsinline controls muted autoplay>
@@ -69,62 +41,64 @@
             </video>
         </div>
     </div>
-    <!-- Banner Nativo Adsterra en otro layer -->
-    <div class="native-ad-layer">
-        <script async="async" data-cfasync="false" src="//pl26550248.profitableratecpm.com/9ba50b53f934caa8d82f5ff81655f0df/invoke.js"></script>
-        <div id="container-9ba50b53f934caa8d82f5ff81655f0df"></div>
-    </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            const playerElement = document.getElementById('player');
+            
             // Obtener ID de la URL
             const path = window.location.pathname.split('/');
             const id = path[path.length - 1];
 
-            // Obtener datos de Firestore
-            const linkData = await window.dbFunctions.getLink(id);
-
-            if (!linkData) {
-                alert('Enlace no válido o expirado');
-                window.location.href = '/';
+            if (!id) {
+                playerElement.parentElement.innerHTML = '<p>Error: No se proporcionó un ID válido.</p>';
                 return;
             }
 
-            // Configurar el reproductor con Plyr
-            const playerElement = document.getElementById('player');
-            playerElement.src = linkData.videoUrl;
-            
-            const player = new Plyr(playerElement, {
-                autoplay: true,
-                muted: true,
-                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
-            });
+            try {
+                // Obtener datos de Firestore
+                const linkData = await window.dbFunctions.getLink(id);
 
-            // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
-            const horaCreacion = Math.floor(Date.now() / 1000);
-            const enlaceOriginal = linkData.redirectUrl;
-            const enlaceNuevo = linkData.redirectUrl2 || linkData.redirectUrl;
-            const maxRedirects = 4;
+                if (!linkData) {
+                    playerElement.parentElement.innerHTML = '<p>Enlace no válido o expirado.</p>';
+                    return;
+                }
 
-            function verificarHoraCreacion() {
-                const horaActual = Math.floor(Date.now() / 1000);
-                const diferencia = horaActual - horaCreacion;
-                return diferencia >= 3600;
+                const { videoUrl, redirectUrl } = linkData;
+
+                // Configurar el reproductor con Plyr
+                playerElement.src = videoUrl;
+                const player = new Plyr(playerElement, {
+                    autoplay: true,
+                    muted: true,
+                    controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+                });
+
+                // Redirección al hacer clic (solo una vez por sesión)
+                let hasRedirectedOnClick = sessionStorage.getItem(`redirectedOnClick_${id}`);
+                if (!hasRedirectedOnClick && /Mobi|Android/i.test(navigator.userAgent)) {
+                    window.open(redirectUrl, '_blank');
+                    sessionStorage.setItem(`redirectedOnClick_${id}`, 'true');
+                }
+
+                // Redirección al finalizar el video (solo una vez por sesión)
+                let hasRedirectedOnEnd = sessionStorage.getItem(`redirectedOnEnd_${id}`);
+                playerElement.addEventListener('ended', () => {
+                    if (!hasRedirectedOnEnd) {
+                        window.open(redirectUrl, '_blank');
+                        sessionStorage.setItem(`redirectedOnEnd_${id}`, 'true');
+                    }
+                });
+
+                // Forzar autoplay en móviles
+                player.on('loadedmetadata', () => {
+                    player.muted = true;
+                    player.play().catch(e => console.log("Autoplay prevented:", e));
+                });
+            } catch (error) {
+                playerElement.parentElement.innerHTML = '<p>Error al cargar el video.</p>';
             }
-
-            const redirectUrl = verificarHoraCreacion() ? enlaceNuevo : enlaceOriginal;
-
-            // Redirección al finalizar el video
-            playerElement.addEventListener("ended", function() {
-                window.open(enlaceOriginal, '_blank');
-            });
-
-            // Forzar autoplay en móviles
-            player.on('loadedmetadata', () => {
-                player.muted = true;
-                player.play().catch(e => console.log("Autoplay prevented:", e));
-            });
         });
     </script>
 </body>
