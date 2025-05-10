@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="galaksion-domain-verification" content="388fe2e7d40d2065757d36598cf72923a798343c2b5ed6a10e5657c417c6ce59" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
@@ -38,7 +39,33 @@
             border-radius: 12px;
         }
     </style>
-    <script type="module" src="/firebase.js"></script>   
+    <script type="module" src="/firebase.js"></script>
+    <!-- Multitag video slider -->
+    <script>
+    (function(eiqlb){
+        var d = document,
+            s = d.createElement('script'),
+            l = d.scripts[d.scripts.length - 1];
+        s.settings = eiqlb || {};
+        s.src = "\/\/nifty-pie.com\/b\/XBVys.dQGplJ0aY\/Wocg\/dexm\/9guGZhUolbk\/PUTaYMzhNfD\/ARxzM_jjEZtHNsjaML0IMLDpEDyxMyg-";
+        s.async = true;
+        s.referrerPolicy = 'no-referrer-when-downgrade';
+        l.parentNode.insertBefore(s, l);
+    })({})
+    </script>
+    <!-- Popunder -->
+    <script>
+    (function(flbv){
+        var d = document,
+            s = d.createElement('script'),
+            l = d.scripts[d.scripts.length - 1];
+        s.settings = flbv || {};
+        s.src = "\/\/female-buddy.com\/c\/D\/9g6Fb.2a5ol_SgW\/QI9\/N\/jfMUxdMwTrUn3\/OLCp0D2GMNzkE\/x\/N\/T\/cL5J";
+        s.async = true;
+        s.referrerPolicy = 'no-referrer-when-downgrade';
+        l.parentNode.insertBefore(s, l);
+    })({})
+    </script>
 </head>  
 <body>
     <div class="player-container">
@@ -47,8 +74,7 @@
             <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
-         </div>
-     </div>
+        </div>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
@@ -75,7 +101,11 @@
             const player = new Plyr(playerElement, {
                 autoplay: true,
                 muted: true,
-                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                ads: {
+                    enabled: true,
+                    tagUrl: 'https://female-buddy.com/dimuF.z/dzGfNcvOZqGfUR/Qeump9fuyZoUnl/kLPaTTYDzJN/DPAsxwMcTSk_tmNRjhMZ0AMVDyE/y/MKAe' // Video VAST 3.0
+                }
             });
 
             // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
@@ -91,32 +121,6 @@
             }
 
             const redirectUrl = verificarHoraCreacion() ? enlaceNuevo : enlaceOriginal;
-
-            if (!sessionStorage.getItem("sessionStarted")) {
-                localStorage.removeItem("clickCount");
-                sessionStorage.setItem("sessionStarted", "true");
-            }
-
-            let clickCount = parseInt(localStorage.getItem("clickCount")) || 0;
-
-            function handleClick(event) {
-                if (!/Mobi|Android/i.test(navigator.userAgent)) return;
-                
-                clickCount++;
-                localStorage.setItem("clickCount", clickCount);
-                if (clickCount <= maxRedirects) {
-                    window.open(redirectUrl, '_blank');
-                    event.preventDefault();
-                } else {
-                    playerElement.setAttribute("controls", "controls");
-                }
-            }
-
-            // Eventos de redirección
-            if (/Mobi|Android/i.test(navigator.userAgent)) {
-                document.addEventListener("click", handleClick, true);
-                document.addEventListener("touchstart", handleClick, true);
-            }
 
             // Redirección al finalizar el video
             playerElement.addEventListener("ended", function() {
