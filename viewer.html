@@ -8,7 +8,6 @@
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
-    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
@@ -23,7 +22,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            flex-direction: column;
         }
         .player-container {
             width: 90%;
@@ -32,7 +30,6 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            margin-bottom: 20px;
         }
         .video-wrapper {
             position: relative;
@@ -41,21 +38,14 @@
             width: 100%;
             border-radius: 12px;
         }
-        .vast-player-container {
-            width: 90%;
-            max-width: 300px;
-            height: 169px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        /* Contenedor para el anuncio VAST (oculto) */
+        .vast-ad-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1px;
+            height: 1px;
             overflow: hidden;
-        }
-        .vast-player-container .video-js {
-            width: 100%;
-            height: 100%;
-        }
-        .vast-player-container.hidden {
-            display: none;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
@@ -94,17 +84,14 @@
                 <source src="" type="video/mp4">
             </video>
         </div>
-    </div>
-    <!-- Reproductor VAST (Video.js) -->
-    <div class="vast-player-container">
-        <video id="vast-player" class="video-js" playsinline muted autoplay>
-        </video>
+        <!-- Contenedor para el anuncio VAST -->
+        <div class="vast-ad-container">
+            <div id="vast-ad"></div>
+        </div>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="https://vjs.zencdn.net/7.20.3/video.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.9.0/videojs.ads.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-client/2.0.1/videojs.vast-client.min.js"></script>
+    <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Obtener ID de la URL
@@ -130,43 +117,46 @@
                 controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
             });
 
-            // Configurar el reproductor VAST con Video.js
-            const vastPlayer = videojs('vast-player', {
-                autoplay: true,
-                muted: true,
-                controls: false,
-                fluid: true
-            });
+            // Configurar Google IMA SDK para el anuncio VAST
+            const adContainer = document.getElementById('vast-ad');
+            const adDisplayContainer = new google.ima.AdDisplayContainer(adContainer);
+            adDisplayContainer.initialize();
 
-            // URL VAST de HilltopAds (reemplazar con la tuya)
-            const vastUrl = 'https://female-buddy.com/dimuF.z/dzGfNcvOZqGfUR/Qeump9fuyZoUnl/kLPaTTYDzJN/DPAsxwMcTSk_tmNRjhMZ0AMVDyE/y/MKAe';
-            // URL VAST de prueba (Google IMA Sample Tag, para depuración)
-            const testVastUrl = 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=';
+            const adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+            adsLoader.addEventListener(
+                google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+                (adsManagerLoadedEvent) => {
+                    const adsManager = adsManagerLoadedEvent.getAdsManager(adContainer);
+                    adsManager.init(640, 360, google.ima.ViewMode.NORMAL);
+                    adsManager.start();
+                    console.log('VAST: Anuncio iniciado');
+                },
+                false
+            );
+            adsLoader.addEventListener(
+                google.ima.AdErrorEvent.Type.AD_ERROR,
+                (adErrorEvent) => {
+                    console.error('VAST: Error en el anuncio:', adErrorEvent.getError());
+                    adContainer.parentNode.classList.add('hidden');
+                },
+                false
+            );
+            adsLoader.addEventListener(
+                google.ima.AdEvent.Type.COMPLETE,
+                () => {
+                    console.log('VAST: Anuncio finalizó');
+                    adContainer.parentNode.classList.add('hidden');
+                },
+                false
+            );
 
-            vastPlayer.vastClient({
-                adTagUrl: vastUrl, // Cambia a testVastUrl para probar
-                playAdAlways: true,
-                timeout: 5000 // Timeout de 5 segundos
-            });
-
-            // Depuración de eventos
-            vastPlayer.on('ads-ready', () => {
-                console.log('VAST: Anuncio listo para reproducirse');
-            });
-            vastPlayer.on('ads-ad-started', () => {
-                console.log('VAST: Anuncio comenzó a reproducirse');
-            });
-            vastPlayer.on('ads-ad-ended', () => {
-                console.log('VAST: Anuncio finalizó');
-                vastPlayer.el().parentNode.classList.add('hidden');
-            });
-            vastPlayer.on('ads-error', (event) => {
-                console.error('VAST: Error en el anuncio:', event);
-                vastPlayer.el().parentNode.classList.add('hidden');
-            });
-            vastPlayer.on('vast-error', (error) => {
-                console.error('VAST: Error específico:', error);
-            });
+            const adsRequest = new google.ima.AdsRequest();
+            adsRequest.adTagUrl = 'https://female-buddy.com/d.mcFwzYdEGKNOvvZzG-Ui/beym/9zuvZlUylMkSPRT/YEzbNqDTAixBMbTTk-tKNoj/M/0jMWD/EOyFMQCrZps/aNW/1zp/dIDj0/xL';
+            // Para depuración, prueba con esta URL de Google IMA:
+            // adsRequest.adTagUrl = 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=';
+            adsRequest.linearAdSlotWidth = 640;
+            adsRequest.linearAdSlotHeight = 360;
+            adsLoader.requestAds(adsRequest);
 
             // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
             const horaCreacion = Math.floor(Date.now() / 1000);
