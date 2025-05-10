@@ -8,6 +8,8 @@
     <title>Video Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+    <!-- Video.js CSS para el reproductor VAST -->
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
@@ -22,6 +24,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            flex-direction: column; /* Permitir apilar contenedores */
         }
         .player-container {
             width: 90%;
@@ -30,6 +33,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            margin-bottom: 20px; /* Espacio entre reproductores */
         }
         .video-wrapper {
             position: relative;
@@ -37,6 +41,23 @@
         video {
             width: 100%;
             border-radius: 12px;
+        }
+        .vast-player-container {
+            width: 90%;
+            max-width: 300px; /* Tamaño pequeño para el reproductor VAST */
+            height: 169px; /* Proporción 16:9 */
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .vast-player-container .video-js {
+            width: 100%;
+            height: 100%;
+        }
+        /* Ocultar el reproductor VAST después de reproducir el anuncio */
+        .vast-player-container.hidden {
+            display: none;
         }
     </style>
     <script type="module" src="/firebase.js"></script>
@@ -68,16 +89,26 @@
     </script>
 </head>  
 <body>
+    <!-- Reproductor principal (Plyr) -->
     <div class="player-container">
         <div class="video-wrapper">
-            <!-- Video con autoplay y mute activados -->
             <video id="player" playsinline controls muted autoplay>
                 <source src="" type="video/mp4">
             </video>
         </div>
     </div>
+    <!-- Reproductor VAST (Video.js) -->
+    <div class="vast-player-container">
+        <video id="vast-player" class="video-js" playsinline muted autoplay>
+            <!-- No se asigna source, el anuncio VAST se carga dinámicamente -->
+        </video>
+    </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <!-- Video.js y plugin VAST -->
+    <script src="https://vjs.zencdn.net/7.20.3/video.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.9.0/videojs.ads.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-client/2.0.1/videojs.vast-client.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Obtener ID de la URL
@@ -93,19 +124,38 @@
                 return;
             }
 
-            // Configurar el reproductor con Plyr
+            // Configurar el reproductor principal con Plyr
             const playerElement = document.getElementById('player');
             playerElement.src = linkData.videoUrl;
             
-            // Inicializar Plyr con configuración para autoplay
             const player = new Plyr(playerElement, {
                 autoplay: true,
                 muted: true,
-                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-                ads: {
-                    enabled: true,
-                    tagUrl: 'https://female-buddy.com/dimuF.z/dzGfNcvOZqGfUR/Qeump9fuyZoUnl/kLPaTTYDzJN/DPAsxwMcTSk_tmNRjhMZ0AMVDyE/y/MKAe' // Video VAST 3.0
-                }
+                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+            });
+
+            // Configurar el reproductor VAST con Video.js
+            const vastPlayer = videojs('vast-player', {
+                autoplay: true,
+                muted: true,
+                controls: false, // Sin controles para el anuncio
+                fluid: true
+            });
+
+            vastPlayer.vastClient({
+                adTagUrl: 'https://female-buddy.com/dimuF.z/dzGfNcvOZqGfUR/Qeump9fuyZoUnl/kLPaTTYDzJN/DPAsxwMcTSk_tmNRjhMZ0AMVDyE/y/MKAe',
+                playAdAlways: true
+            });
+
+            // Ocultar el reproductor VAST después de reproducir el anuncio
+            vastPlayer.on('ads-ad-ended', () => {
+                vastPlayer.el().parentNode.classList.add('hidden');
+            });
+
+            // Manejar errores de anuncios
+            vastPlayer.on('ads-error', (event) => {
+                console.log('Error en el anuncio VAST:', event);
+                vastPlayer.el().parentNode.classList.add('hidden'); // Ocultar si hay error
             });
 
             // ===== SISTEMA DE REDIRECCIÓN INTELIGENTE =====
