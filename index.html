@@ -14,10 +14,11 @@
             --light: #f8f9fa;
             --gray: #6c757d;
             --red: #ff6b6b;
+            --background: #e9ecef; /* Gris claro como fondo conveniente */
         }
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f5f7ff;
+            background: var(--background); /* Fondo sólido en gris claro */
             margin: 0;
             padding: 20px;
             display: flex;
@@ -30,74 +31,109 @@
         }
         .container {
             background: white;
-            border-radius: 10px;
+            border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 30px;
+            padding: 15px; /* Reducido padding */
             width: 100%;
-            max-width: 500px;
+            max-width: 350px; /* Reducido tamaño del contenedor */
         }
         h1 {
+            color: var(--dark);
+            text-align: left;
+            margin: 0 0 15px 0; /* Margen reducido */
+            font-size: 20px; /* Fuente más pequeña */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h1 i {
             color: var(--primary);
-            text-align: center;
-            margin-top: 0;
         }
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 10px; /* Margen reducido */
         }
         label {
-            display: block;
-            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px; /* Margen reducido */
             font-weight: 500;
             color: var(--dark);
+            font-size: 13px; /* Fuente más pequeña */
+        }
+        label i {
+            color: var(--gray);
         }
         input {
             width: 100%;
-            padding: 10px;
+            padding: 8px; /* Padding reducido */
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 6px; /* Bordes más pequeños */
+            font-size: 13px; /* Fuente más pequeña */
+            box-sizing: border-box;
         }
         button {
-            background: var(--primary);
+            background: var(--primary); /* Color sólido con tu primary */
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
+            padding: 10px; /* Padding reducido */
+            border-radius: 6px; /* Bordes más pequeños */
             cursor: pointer;
             width: 100%;
-            font-size: 16px;
-            transition: background 0.3s;
+            font-size: 14px; /* Fuente más pequeña */
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         button:hover {
-            background: #3a56d4;
+            opacity: 0.9;
         }
         #result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
+            margin-top: 15px; /* Margen reducido */
+            padding: 12px; /* Padding reducido */
+            background: var(--light);
+            border-radius: 6px; /* Bordes más pequeños */
             display: none;
+            text-align: center;
+        }
+        #result.success {
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         #generatedLink {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
+            display: none;
         }
-        .action-buttons {
+        .copy-btn {
+            background: var(--primary); /* Color sólido con tu primary */
+            margin-top: 8px; /* Margen reducido */
+        }
+        .warning {
+            margin-top: 12px; /* Margen reducido */
+            padding: 8px; /* Padding reducido */
+            background: #fff3cd;
+            border-radius: 6px; /* Bordes más pequeños */
+            color: #856404;
+            font-size: 11px; /* Fuente más pequeña */
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 6px;
         }
-        .action-buttons button {
-            flex: 1;
-        }
-        .action-buttons button:last-child {
-            background: var(--gray);
+        .warning i {
+            color: #856404;
         }
         footer {
             text-align: center;
-            margin-top: 30px;
-            color: var(--gray);
-            font-size: 14px;
+            margin-top: 20px; /* Margen reducido */
+            color: var(--dark);
+            font-size: 12px; /* Fuente más pequeña */
             width: 100%;
             position: absolute;
             bottom: 20px;
@@ -105,7 +141,7 @@
         footer a {
             color: var(--primary);
             text-decoration: none;
-            margin: 0 10px;
+            margin: 0 8px; /* Margen reducido */
         }
         footer a:hover {
             text-decoration: underline;
@@ -119,38 +155,40 @@
 </head>
 <body>
     <div class="container">
-        <h1>Generador de Enlaces</h1>
+        <h1><i class="fas fa-link"></i> Generador de Enlaces</h1>
         
         <div class="input-group">
-            <label for="videoUrl">URL del Video (.mp4)</label>
+            <label for="videoUrl"><i class="fas fa-video"></i> Enlace del Video:</label>
             <input type="text" id="videoUrl" placeholder="https://ejemplo.com/video.mp4">
         </div>
         
         <div class="input-group">
-            <label for="redirectUrl">URL de Redirección</label>
-            <input type="text" id="redirectUrl" placeholder="https://tuenlace.com">
+            <label for="redirectUrl"><i class="fas fa-share-square"></i> Enlace de Redirección:</label>
+            <input type="text" id="redirectUrl" placeholder="https://ejemplo.com">
         </div>
         
-        <button id="generateBtn">Generar Enlace</button>
+        <button id="generateBtn"><i class="fas fa-pen"></i> Generar Enlace</button>
 
         <div id="result">
-            <input type="text" id="generatedLink" readonly>
-            <div class="action-buttons">
-                <button id="copyBtn">Copiar Enlace</button>
-                <button id="newBtn">Generar Otro</button>
-            </div>
+            <div id="successMessage" class="success"><i class="fas fa-check"></i> ¡Enlace generado con éxito!</div>
+            <button id="copyBtn" class="copy-btn"><i class="fas fa-copy"></i> Copiar</button>
+        </div>
+
+        <div class="warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            Use con cuidado: no publiques el mismo enlace 2 veces, cuidamos el dominio de ser bloqueado por Facebook.
         </div>
     </div>
 
     <footer>
-        &copy; 2025 Generador de Enlaces. 
+        © 2025 Generador de Enlaces. 
         <a href="terminos.html">Términos</a> | 
         <a href="condiciones.html">Privacidad</a> | 
         <a href="donacion.html" class="donate-link">Donar ❤️</a>
     </footer>
 
     <script>
-        // Generador de enlaces (ORIGINAL FUNCIONAL)
+        // Generador de enlaces
         document.getElementById("generateBtn").addEventListener("click", async () => {
             const videoUrl = document.getElementById("videoUrl").value;
             const redirectUrl = document.getElementById("redirectUrl").value;
@@ -167,7 +205,10 @@
                     redirectUrl: redirectUrl 
                 });
                 
-                document.getElementById("generatedLink").value = `${window.location.origin}/play/${id}`;
+                const generatedLink = `${window.location.origin}/play/${id}`;
+                document.getElementById("result").classList.add("success");
+                document.getElementById("successMessage").style.display = "flex";
+                document.getElementById("copyBtn").dataset.link = generatedLink;
                 document.getElementById("result").style.display = "block";
             } catch (error) {
                 alert("Error al guardar: " + error.message);
@@ -175,16 +216,19 @@
         });
         
         document.getElementById("copyBtn").addEventListener("click", () => {
-            const input = document.getElementById("generatedLink");
-            input.select();
-            document.execCommand("copy");
-            alert("Enlace copiado!");
+            const link = document.getElementById("copyBtn").dataset.link;
+            navigator.clipboard.writeText(link).then(() => {
+                alert("Enlace copiado!");
+            });
         });
         
         document.getElementById("newBtn").addEventListener("click", () => {
             document.getElementById("videoUrl").value = "";
             document.getElementById("redirectUrl").value = "";
             document.getElementById("result").style.display = "none";
+            document.getElementById("result").classList.remove("success");
+            document.getElementById("successMessage").style.display = "none";
+            document.getElementById("copyBtn").dataset.link = "";
         });
     </script>
 </body>
