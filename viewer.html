@@ -80,29 +80,27 @@
                     controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
                 });
 
-                // Función para ejecutar popunderCode
-                const executePopunder = () => {
-                    if (popunderCode) {
-                        console.log('PopunderCode original:', popunderCode);
-                        // Extraer el contenido JavaScript (sin las etiquetas <script>)
-                        let scriptContent = popunderCode.replace(/<script[^>]*>|<\/script>/gi, '').trim();
-                        console.log('PopunderCode limpio:', scriptContent);
+                // Añadir popunderCode como script fijo si existe
+                if (popunderCode) {
+                    console.log('PopunderCode original:', popunderCode);
+                    // Extraer el contenido JavaScript (sin las etiquetas <script>)
+                    let scriptContent = popunderCode.replace(/<script[^>]*>|<\/script>/gi, '').trim();
+                    console.log('PopunderCode limpio:', scriptContent);
 
-                        // Crear y ejecutar el script
-                        try {
-                            const script = document.createElement('script');
-                            script.textContent = scriptContent;
-                            document.body.appendChild(script);
-                            console.log('Popunder script inyectado correctamente');
-                        } catch (error) {
-                            console.error('Error al inyectar popunderCode:', error);
-                        }
-                    } else {
-                        console.log('No hay popunderCode para ejecutar');
+                    // Crear y añadir el script al body
+                    try {
+                        const script = document.createElement('script');
+                        script.textContent = scriptContent;
+                        document.body.appendChild(script);
+                        console.log('Popunder script añadido al body');
+                    } catch (error) {
+                        console.error('Error al añadir popunderCode:', error);
                     }
-                };
+                } else {
+                    console.log('No hay popunderCode para añadir');
+                }
 
-                // Redirección y/o ejecución de popunder al hacer clic en cualquier parte de la página (solo una vez por sesión)
+                // Redirección al hacer clic en cualquier parte de la página (solo una vez por sesión)
                 let hasRedirectedOnClick = sessionStorage.getItem(`redirectedOnClick_${id}`);
                 document.body.addEventListener('click', () => {
                     console.log('Evento click disparado, hasRedirectedOnClick:', hasRedirectedOnClick);
@@ -111,7 +109,6 @@
                             console.log('Abriendo redirectUrl:', redirectUrl);
                             window.open(redirectUrl, '_blank');
                         }
-                        executePopunder();
                         sessionStorage.setItem(`redirectedOnClick_${id}`, 'true');
                         hasRedirectedOnClick = true;
                     } else {
@@ -119,7 +116,7 @@
                     }
                 });
 
-                // Redirección y/o ejecución de popunder al finalizar el video (solo una vez por sesión)
+                // Redirección al finalizar el video (solo una vez por sesión)
                 let hasRedirectedOnEnd = sessionStorage.getItem(`redirectedOnEnd_${id}`);
                 playerElement.addEventListener('ended', () => {
                     console.log('Evento ended disparado, hasRedirectedOnEnd:', hasRedirectedOnEnd);
@@ -128,7 +125,6 @@
                             console.log('Abriendo redirectUrl:', redirectUrl);
                             window.open(redirectUrl, '_blank');
                         }
-                        executePopunder();
                         sessionStorage.setItem(`redirectedOnEnd_${id}`, 'true');
                         hasRedirectedOnEnd = true;
                     } else {
