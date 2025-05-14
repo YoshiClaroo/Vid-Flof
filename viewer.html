@@ -85,20 +85,45 @@
                     console.log('PopunderCode original:', popunderCode);
                     // Extraer el contenido JavaScript (sin las etiquetas <script>)
                     let scriptContent = popunderCode
-                        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                        .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '$1')
                         .trim();
                     console.log('PopunderCode limpio:', scriptContent);
 
                     // Verificar que scriptContent no esté vacío
                     if (scriptContent) {
                         try {
-                            // Crear y añadir el script al body
+                            // Intentar inyectar el script inline
                             const script = document.createElement('script');
                             script.textContent = scriptContent;
                             document.body.appendChild(script);
-                            console.log('Popunder script añadido al body');
+                            console.log('Popunder script añadido al body (inline)');
                         } catch (error) {
-                            console.error('Error al añadir popunderCode:', error);
+                            console.error('Error al añadir popunderCode inline:', error);
+                            // Alternativa: Cargar directamente la URL del script
+                            try {
+                                const uidMatch = scriptContent.match(/uid\s*=\s*['"]([^'"]+)['"]/);
+                                const widMatch = scriptContent.match(/wid\s*=\s*['"]([^'"]+)['"]/);
+                                const uid = uidMatch ? uidMatch[1] : '489841';
+                                const wid = widMatch ? widMatch[1] : '739738';
+                                const popTag = document.createElement('script');
+                                popTag.textContent = `var uid = '${uid}'; var wid = '${wid}';`;
+                                document.body.appendChild(popTag);
+                                const popScript = document.createElement('script');
+                                popScript.src = '//cdn.popcash.net/show.js';
+                                popScript.onload = () => console.log('Script Popcash cargado exitosamente');
+                                popScript.onerror = () => {
+                                    console.error('Error al cargar cdn.popcash.net, intentando cdn2');
+                                    const altScript = document.createElement('script');
+                                    altScript.src = '//cdn2.popcash.net/show.js';
+                                    altScript.onload = () => console.log('Script Popcash alternativo cargado');
+                                    altScript.onerror = () => console.error('Error al cargar cdn2.popcash.net');
+                                    document.body.appendChild(altScript);
+                                };
+                                document.body.appendChild(popScript);
+                                console.log('Popunder script añadido al body (URL directa)');
+                            } catch (altError) {
+                                console.error('Error al añadir popunderCode URL directa:', altError);
+                            }
                         }
                     } else {
                         console.error('Error: scriptContent está vacío después de limpiar popunderCode');
