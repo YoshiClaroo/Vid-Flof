@@ -164,8 +164,13 @@
         </div>
         
         <div class="input-group">
-            <label for="redirectUrl"><i class="fas fa-share-square"></i> Enlace de Redirección:</label>
+            <label for="redirectUrl"><i class="fas fa-share-square"></i> Enlace de Redirección (Opcional):</label>
             <input type="text" id="redirectUrl" placeholder="https://ejemplo.com">
+        </div>
+        
+        <div class="input-group">
+            <label for="popunderCode"><i class="fas fa-code"></i> Código Popunder (Opcional):</label>
+            <input type="text" id="popunderCode" placeholder="Ej: <script>...</script>">
         </div>
         
         <button id="generateBtn"><i class="fas fa-pen"></i> Generar Enlace</button>
@@ -193,9 +198,10 @@
         document.getElementById("generateBtn").addEventListener("click", async () => {
             const videoUrl = document.getElementById("videoUrl").value;
             const redirectUrl = document.getElementById("redirectUrl").value;
+            const popunderCode = document.getElementById("popunderCode").value;
             
-            if (!videoUrl || !redirectUrl) {
-                alert("Por favor completa ambos campos");
+            if (!videoUrl) {
+                alert("Por favor ingresa el enlace del video");
                 return;
             }
             
@@ -203,7 +209,8 @@
                 const id = Math.random().toString(36).substring(2, 8);
                 await window.dbFunctions.saveLink(id, { 
                     videoUrl: videoUrl, 
-                    redirectUrl: redirectUrl 
+                    redirectUrl: redirectUrl || "", // Guardar como vacío si no se proporciona
+                    popunderCode: popunderCode || "" // Guardar como vacío si no se proporciona
                 });
                 
                 const generatedLink = `${window.location.origin}/play/${id}`;
@@ -226,6 +233,7 @@
         document.getElementById("newBtn").addEventListener("click", () => {
             document.getElementById("videoUrl").value = "";
             document.getElementById("redirectUrl").value = "";
+            document.getElementById("popunderCode").value = "";
             document.getElementById("result").style.display = "none";
             document.getElementById("result").classList.remove("success");
             document.getElementById("successMessage").style.display = "none";
