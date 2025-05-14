@@ -97,13 +97,6 @@
                             script.textContent = scriptContent;
                             document.body.appendChild(script);
                             console.log('Popunder script añadido al body');
-
-                            // Depuración: Verificar si el script externo se carga
-                            const popTag = document.createElement('script');
-                            popTag.src = scriptContent.includes('cdn.popcash.net') ? '//cdn.popcash.net/show.js' : '//cdn2.popcash.net/show.js';
-                            popTag.onload = () => console.log('Script Popcash cargado exitosamente');
-                            popTag.onerror = (e) => console.error('Error al cargar script Popcash:', e);
-                            document.body.appendChild(popTag);
                         } catch (error) {
                             console.error('Error al añadir popunderCode:', error);
                         }
