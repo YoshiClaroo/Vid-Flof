@@ -1,69 +1,120 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reproductor de Video</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ppck-ver" content="47e45ec35fcd8617b1ddc7eae5630650" />
+    <title>Video Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #fff;
+        }
+        .player-container {
+            width: 90%;
+            max-width: 350px;
+            padding: 15px;
+            background: #fff;
+        }
+        .video-wrapper {
+            position: relative;
+        }
+        video {
+            width: 100%;
+            border-radius: 0;
+        }
+    </style>
+    
+    <script type="module" src="/firebase.js"></script>
 </head>
 <body>
-  <video id="videoPlayer" width="100%" height="auto" controls autoplay></video>  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc
-    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    <div class="player-container">
+        <div class="video-wrapper">
+            <video id="player" playsinline controls muted autoplay>
+                <source src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyANjIecB-LakVfSjbjd-Z3TsDlm0tbXEfU",
-      authDomain: "vid-flof.firebaseapp.com",
-      projectId: "vid-flof",
-      storageBucket: "vid-flof.firebasestorage.app",
-      messagingSenderId: "842823438154",
-      appId: "1:842823438154:web:0b2a73c5f85e8fe5613bb3",
-      measurementId: "G-6X1PK66KNQ"
-    };
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const playerElement = document.getElementById('player');
+            
+            // Obtener ID de la URL
+            const path = window.location.pathname.split('/');
+            const id = path[path.length - 1];
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Obtener el ID desde la URL: viewer.html?id=abc123
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
-
-    if (!id) {
-      alert('ID no proporcionado');
-    } else {
-      const docRef = doc(db, "links", id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-
-        // Mostrar el video
-        const videoPlayer = document.getElementById("videoPlayer");
-        videoPlayer.src = data.videoUrl;
-
-        // Ejecutar script Popunder si existe
-        if (data.popunder) {
-          const container = document.createElement('div');
-          container.innerHTML = data.popunder;
-          document.body.appendChild(container);
-
-          // Re-ejecutar scripts embebidos
-          const scripts = container.querySelectorAll('script');
-          scripts.forEach(oldScript => {
-            const newScript = document.createElement('script');
-            if (oldScript.src) {
-              newScript.src = oldScript.src;
-            } else {
-              newScript.textContent = oldScript.textContent;
+            if (!id) {
+                playerElement.parentElement.innerHTML = '<p>Error: No se proporcionó un ID válido.</p>';
+                return;
             }
-            document.body.appendChild(newScript);
-          });
-        }
-      } else {
-        alert('Documento no encontrado');
-      }
-    }
-  </script></body>
+
+            try {
+                // Obtener datos de Firestore
+                const linkData = await window.dbFunctions.getLink(id);
+
+                if (!linkData) {
+                    playerElement.parentElement.innerHTML = '<p>Enlace no válido o expirado.</p>';
+                    return;
+                }
+
+                const { videoUrl, redirectUrl, popunder } = linkData;
+
+                // Configurar el reproductor con Plyr
+                playerElement.src = videoUrl;
+                const player = new Plyr(playerElement, {
+                    autoplay: true,
+                    muted: true,
+                    controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+                });
+
+                // Redirección al hacer clic en cualquier parte de la página (solo una vez por sesión)
+                let hasRedirectedOnClick = sessionStorage.getItem(`redirectedOnClick_${id}`);
+                document.body.addEventListener('click', () => {
+                    if (!hasRedirectedOnClick) {
+                        window.open(redirectUrl, '_blank');
+                        sessionStorage.setItem(`redirectedOnClick_${id}`, 'true');
+                        hasRedirectedOnClick = true;
+                    }
+                });
+
+                // Redirección al finalizar el video (solo una vez por sesión)
+                let hasRedirectedOnEnd = sessionStorage.getItem(`redirectedOnEnd_${id}`);
+                playerElement.addEventListener('ended', () => {
+                    if (!hasRedirectedOnEnd) {
+                        window.open(redirectUrl, '_blank');
+                        sessionStorage.setItem(`redirectedOnEnd_${id}`, 'true');
+                        hasRedirectedOnEnd = true;
+                    }
+                });
+
+                // Forzar autoplay en móviles
+                player.on('loadedmetadata', () => {
+                    player.muted = true;
+                    player.play().catch(e => console.log("Autoplay prevented:", e));
+                });
+
+                // Ejecutar popunder si está definido
+                if (popunder) {
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.innerHTML = popunder;
+                    document.body.appendChild(script);
+                }
+
+            } catch (error) {
+                playerElement.parentElement.innerHTML = '<p>Error al cargar el video.</p>';
+            }
+        });
+    </script>
+</body>
 </html>
