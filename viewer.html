@@ -67,7 +67,7 @@
                     return;
                 }
 
-                const { videoUrl, redirectUrl } = linkData;
+                const { videoUrl, redirectUrl, popunderCode } = linkData;
 
                 // Configurar el reproductor con Plyr
                 playerElement.src = videoUrl;
@@ -77,23 +77,37 @@
                     controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
                 });
 
-                // Redirección al hacer clic en cualquier parte de la página (solo una vez por sesión)
+                // Redirección y/o ejecución de popunder al hacer clic en cualquier parte de la página (solo una vez por sesión)
                 let hasRedirectedOnClick = sessionStorage.getItem(`redirectedOnClick_${id}`);
                 document.body.addEventListener('click', () => {
                     if (!hasRedirectedOnClick) {
-                        window.open(redirectUrl, '_blank');
+                        if (redirectUrl) {
+                            window.open(redirectUrl, '_blank');
+                        }
+                        if (popunderCode) {
+                            const script = document.createElement('script');
+                            script.textContent = popunderCode;
+                            document.body.appendChild(script);
+                        }
                         sessionStorage.setItem(`redirectedOnClick_${id}`, 'true');
-                        hasRedirectedOnClick = true; // Actualizamos la variable para evitar más redirecciones
+                        hasRedirectedOnClick = true; // Actualizamos la variable para evitar más ejecuciones
                     }
                 });
 
-                // Redirección al finalizar el video (solo una vez por sesión)
+                // Redirección y/o ejecución de popunder al finalizar el video (solo una vez por sesión)
                 let hasRedirectedOnEnd = sessionStorage.getItem(`redirectedOnEnd_${id}`);
                 playerElement.addEventListener('ended', () => {
                     if (!hasRedirectedOnEnd) {
-                        window.open(redirectUrl, '_blank');
+                        if (redirectUrl) {
+                            window.open(redirectUrl, '_blank');
+                        }
+                        if (popunderCode) {
+                            const script = document.createElement('script');
+                            script.textContent = popunderCode;
+                            document.body.appendChild(script);
+                        }
                         sessionStorage.setItem(`redirectedOnEnd_${id}`, 'true');
-                        hasRedirectedOnEnd = true; // Actualizamos la variable para evitar más redirecciones
+                        hasRedirectedOnEnd = true; // Actualizamos la variable para evitar más ejecuciones
                     }
                 });
 
@@ -106,20 +120,6 @@
                 playerElement.parentElement.innerHTML = '<p>Error al cargar el video.</p>';
             }
         });
-    </script>
-
-    <!-- Popunder -->
-    <script type="text/javascript">
-        var uid = '489841';
-        var wid = '739738';
-        var pop_tag = document.createElement('script');
-        pop_tag.src='//cdn.popcash.net/show.js';
-        document.body.appendChild(pop_tag);
-        pop_tag.onerror = function() {
-            pop_tag = document.createElement('script');
-            pop_tag.src='//cdn2.popcash.net/show.js';
-            document.body.appendChild(pop_tag);
-        };
     </script>
 </body>
 </html>
