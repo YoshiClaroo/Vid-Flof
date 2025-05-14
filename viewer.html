@@ -84,7 +84,9 @@
                 if (popunderCode) {
                     console.log('PopunderCode original:', popunderCode);
                     // Extraer el contenido JavaScript (sin las etiquetas <script>)
-                    let scriptContent = popunderCode.replace(/<script[^>]*>|<\/script>/gi, '').trim();
+                    let scriptContent = popunderCode
+                        .replace(/<script\b[^>]*>|<\/script>/gi, '')
+                        .trim();
                     console.log('PopunderCode limpio:', scriptContent);
 
                     // Crear y añadir el script al body
@@ -93,6 +95,13 @@
                         script.textContent = scriptContent;
                         document.body.appendChild(script);
                         console.log('Popunder script añadido al body');
+                        
+                        // Depuración: Verificar si el script externo se carga
+                        const popTag = document.createElement('script');
+                        popTag.src = '//cdn.popcash.net/show.js';
+                        popTag.onload = () => console.log('Script Popcash cargado exitosamente');
+                        popTag.onerror = () => console.error('Error al cargar script Popcash');
+                        document.body.appendChild(popTag);
                     } catch (error) {
                         console.error('Error al añadir popunderCode:', error);
                     }
