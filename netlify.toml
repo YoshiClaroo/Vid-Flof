@@ -1,8 +1,8 @@
 [[redirects]]
-  from = "/play/*"
-  to = "/viewer.html"
+  from = "/play/:id"
+  to = "/viewer.html?id=:id"
   status = 200
-
+  
 [[headers]]
   for = "/ads.txt"
   [headers.values]
