@@ -1,249 +1,128 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="6a97888e-site-verification" content="931d726886ffa37eb28d4f93917cd8e6">
+  <meta name="ppck-ver" content="47e45ec35fcd8617b1ddc7eae5630650" />
+  <title>Video Player</title>
 
-    <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="6a97888e-site-verification" content="931d726886ffa37eb28d4f93917cd8e6">
-    <meta name="ppck-ver" content="47e45ec35fcd8617b1ddc7eae5630650" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #fff;
+    }
 
-    <title>Video Player</title>
+    .player-container {
+      width: 90%;
+      max-width: 350px;
+      padding: 15px;
+      background: #fff;
+    }
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    video {
+      width: 100%;
+    }
 
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+    .redirect-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #0066ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
 
-    <style>
+    .redirect-button:hover {
+      background-color: #004ccc;
+    }
+  </style>
 
-        body {
-
-            font-family: 'Poppins', sans-serif;
-
-            margin: 0;
-
-            padding: 0;
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            min-height: 100vh;
-
-            background-color: #fff;
-
-        }
-
-        .player-container {
-
-            width: 90%;
-
-            max-width: 350px;
-
-            padding: 15px;
-
-            background: #fff;
-
-        }
-
-        .video-wrapper {
-
-            position: relative;
-
-        }
-
-        video {
-
-            width: 100%;
-
-            border-radius: 0;
-
-        }
-
-    </style>
-
-    
-
-    <script type="module" src="/firebase.js"></script>
-
+  <script type="module" src="/firebase.js"></script>
 </head>
-
 <body>
 
-    <div class="player-container">
-
-        <div class="video-wrapper">
-
-            <video id="player" playsinline controls muted autoplay>
-
-                <source src="" type="video/mp4">
-
-            </video>
-
-        </div>
-
-    </div>
-
-
-
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-
-    <script>
-
-        document.addEventListener('DOMContentLoaded', async () => {
-
-            const playerElement = document.getElementById('player');
-
-            
-
-            // Obtener ID de la URL
-
-            const path = window.location.pathname.split('/');
-
-            const id = path[path.length - 1];
-
-
-
-            if (!id) {
-
-                playerElement.parentElement.innerHTML = '<p>Error: No se proporcionó un ID válido.</p>';
-
-                return;
-
-            }
-
-
-
-            try {
-
-                // Obtener datos de Firestore
-
-                const linkData = await window.dbFunctions.getLink(id);
-
-
-
-                if (!linkData) {
-
-                    playerElement.parentElement.innerHTML = '<p>Enlace no válido o expirado.</p>';
-
-                    return;
-
-                }
-
-
-
-                const { videoUrl, redirectUrl } = linkData;
-
-
-
-                // Configurar el reproductor con Plyr
-
-                playerElement.src = videoUrl;
-
-                const player = new Plyr(playerElement, {
-
-                    autoplay: true,
-
-                    muted: true,
-
-                    controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
-
-                });
-
-
-
-                // Redirección al hacer clic en cualquier parte de la página (solo una vez por sesión)
-
-                let hasRedirectedOnClick = sessionStorage.getItem(`redirectedOnClick_${id}`);
-
-                document.body.addEventListener('click', () => {
-
-                    if (!hasRedirectedOnClick) {
-
-                        window.open(redirectUrl, '_blank');
-
-                        sessionStorage.setItem(`redirectedOnClick_${id}`, 'true');
-
-                        hasRedirectedOnClick = true; // Actualizamos la variable para evitar más redirecciones
-
-                    }
-
-                });
-
-
-
-                // Redirección al finalizar el video (solo una vez por sesión)
-
-                let hasRedirectedOnEnd = sessionStorage.getItem(`redirectedOnEnd_${id}`);
-
-                playerElement.addEventListener('ended', () => {
-
-                    if (!hasRedirectedOnEnd) {
-
-                        window.open(redirectUrl, '_blank');
-
-                        sessionStorage.setItem(`redirectedOnEnd_${id}`, 'true');
-
-                        hasRedirectedOnEnd = true; // Actualizamos la variable para evitar más redirecciones
-
-                    }
-
-                });
-
-
-
-                // Forzar autoplay en móviles
-
-                player.on('loadedmetadata', () => {
-
-                    player.muted = true;
-
-                    player.play().catch(e => console.log("Autoplay prevented:", e));
-
-                });
-
-            } catch (error) {
-
-                playerElement.parentElement.innerHTML = '<p>Error al cargar el video.</p>';
-
-            }
-
+  <div class="player-container">
+    <video id="player" playsinline controls muted autoplay>
+      <source src="" type="video/mp4">
+    </video>
+
+    <button id="sponsorBtn" class="redirect-button" style="display: none;">Visitar sitio patrocinado</button>
+  </div>
+
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const playerElement = document.getElementById('player');
+      const sponsorBtn = document.getElementById('sponsorBtn');
+
+      const path = window.location.pathname.split('/');
+      const id = path[path.length - 1];
+
+      if (!id) {
+        playerElement.parentElement.innerHTML = '<p>Error: No se proporcionó un ID válido.</p>';
+        return;
+      }
+
+      try {
+        const linkData = await window.dbFunctions.getLink(id);
+        if (!linkData) {
+          playerElement.parentElement.innerHTML = '<p>Enlace no válido o expirado.</p>';
+          return;
+        }
+
+        const { videoUrl, redirectUrl } = linkData;
+
+        playerElement.src = videoUrl;
+
+        const player = new Plyr(playerElement, {
+          autoplay: true,
+          muted: true,
+          controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
         });
 
-    </script>
+        player.on('loadedmetadata', () => {
+          player.muted = true;
+          player.play().catch(e => console.log("Autoplay prevented:", e));
+        });
 
+        sponsorBtn.style.display = 'block';
+        sponsorBtn.addEventListener('click', () => {
+          window.open(redirectUrl, '_blank');
+        });
 
+      } catch (error) {
+        playerElement.parentElement.innerHTML = '<p>Error al cargar el video.</p>';
+        console.error(error);
+      }
+    });
+  </script>
 
-    <!-- Popunder -->
-
-    <script type="text/javascript">
-
-        var uid = '489841';
-
-        var wid = '739738';
-
-        var pop_tag = document.createElement('script');
-
-        pop_tag.src='//cdn.popcash.net/show.js';
-
-        document.body.appendChild(pop_tag);
-
-        pop_tag.onerror = function() {
-
-            pop_tag = document.createElement('script');
-
-            pop_tag.src='//cdn2.popcash.net/show.js';
-
-            document.body.appendChild(pop_tag);
-
-        };
-
-    </script>
+  <!-- Popunder de ExoClick -->
+  <script type="application/javascript">
+    var ad_idzone = "5622292",
+        ad_popup_fallback = false,
+        ad_popup_force = true,
+        ad_chrome_enabled = true,
+        ad_new_tab = true,
+        ad_frequency_period = 60,
+        ad_frequency_count = 3,
+        ad_trigger_method = 3,
+        ad_trigger_delay = 0,
+        ad_capping_enabled = true;
+  </script>
+  <script type="application/javascript" src="https://a.pemsrv.com/popunder1000.js"></script>
 
 </body>
-
 </html>
