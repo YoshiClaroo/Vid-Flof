@@ -27,10 +27,13 @@
       max-width: 350px;
       padding: 15px;
       background: #fff;
+      text-align: center;
     }
 
     video {
       width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
     .redirect-button {
@@ -42,10 +45,16 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
+      transition: background-color 0.3s;
     }
 
     .redirect-button:hover {
       background-color: #004ccc;
+    }
+
+    .loading-message, .error-message {
+      padding: 20px;
+      color: #333;
     }
   </style>
 
@@ -54,9 +63,9 @@
 <body>
 
   <div class="player-container">
-    <video id="player" playsinline controls muted autoplay>
-      <source src="" type="video/mp4">
-    </video>
+    <div id="videoContainer">
+      <p class="loading-message">Cargando video...</p>
+    </div>
 
     <button id="sponsorBtn" class="redirect-button" style="display: none;">Visitar sitio patrocinado</button>
   </div>
@@ -64,47 +73,85 @@
   <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const playerElement = document.getElementById('player');
+      const videoContainer = document.getElementById('videoContainer');
       const sponsorBtn = document.getElementById('sponsorBtn');
 
-      const path = window.location.pathname.split('/');
-      const id = path[path.length - 1];
-
-      if (!id) {
-        playerElement.parentElement.innerHTML = '<p>Error: No se proporcionó un ID válido.</p>';
-        return;
-      }
-
       try {
+        // Obtener ID de los parámetros de consulta
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+
+        if (!id) {
+          throw new Error('No se encontró ID de video en la URL');
+        }
+
+        // Verificar si dbFunctions está disponible
+        if (!window.dbFunctions || typeof window.dbFunctions.getLink !== 'function') {
+          throw new Error('Error en la configuración del reproductor');
+        }
+
+        // Obtener datos del video desde Firebase
         const linkData = await window.dbFunctions.getLink(id);
         if (!linkData) {
-          playerElement.parentElement.innerHTML = '<p>Enlace no válido o expirado.</p>';
-          return;
+          throw new Error('El video solicitado no existe o ha expirado');
         }
 
         const { videoUrl, redirectUrl } = linkData;
 
-        playerElement.src = videoUrl;
+        if (!videoUrl || !videoUrl.startsWith('http')) {
+          throw new Error('La URL del video no es válida');
+        }
 
-        const player = new Plyr(playerElement, {
+        // Crear elemento de video
+        videoContainer.innerHTML = `
+          <video id="player" playsinline controls muted autoplay>
+            <source src="${videoUrl}" type="video/mp4">
+            Tu navegador no soporta videos HTML5
+          </video>
+        `;
+
+        // Inicializar reproductor Plyr
+        const player = new Plyr('#player', {
           autoplay: true,
           muted: true,
-          controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+          controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+          settings: ['quality', 'speed'],
+          ratio: '16:9'
         });
 
-        player.on('loadedmetadata', () => {
+        // Manejar eventos del reproductor
+        player.on('ready', () => {
+          console.log('Reproductor listo');
           player.muted = true;
-          player.play().catch(e => console.log("Autoplay prevented:", e));
+          player.play().catch(e => console.log("Autoplay prevenido:", e));
         });
 
-        sponsorBtn.style.display = 'block';
-        sponsorBtn.addEventListener('click', () => {
-          window.open(redirectUrl, '_blank');
+        player.on('error', (event) => {
+          console.error('Error en el video:', event.detail);
+          videoContainer.innerHTML = `
+            <p class="error-message">Error al cargar el video. Intenta recargar la página.</p>
+          `;
         });
+
+        // Configurar botón de redirección si existe
+        if (redirectUrl) {
+          sponsorBtn.style.display = 'inline-block';
+          sponsorBtn.addEventListener('click', () => {
+            window.open(redirectUrl, '_blank');
+          });
+
+          // Redirigir automáticamente al finalizar el video (opcional)
+          player.on('ended', () => {
+            window.open(redirectUrl, '_blank');
+          });
+        }
 
       } catch (error) {
-        playerElement.parentElement.innerHTML = '<p>Error al cargar el video.</p>';
-        console.error(error);
+        console.error('Error:', error);
+        videoContainer.innerHTML = `
+          <p class="error-message">${error.message}</p>
+          <p>Por favor, verifica el enlace o intenta nuevamente más tarde.</p>
+        `;
       }
     });
   </script>
