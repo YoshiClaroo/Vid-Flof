@@ -13,4 +13,3 @@
   for = "/viewer.html"
   [headers.values]
     Cache-Control = "public, max-age=3600"
-    X-Frame-Options = "SAMEORIGIN"
