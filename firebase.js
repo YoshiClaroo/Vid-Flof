@@ -1,12 +1,14 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+// Importa los módulos necesarios de Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
 import { 
   getFirestore,
   doc,
   setDoc,
   getDoc
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-// Tu configuración de Firebase
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyANjIecB-LakVfSjbjd-Z3TsDlm0tbXEfU",
   authDomain: "vid-flof.firebaseapp.com",
@@ -17,42 +19,56 @@ const firebaseConfig = {
   measurementId: "G-6X1PK66KNQ"
 };
 
-// Inicialización de Firebase
+// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// Funciones para exportar
+// Funciones para trabajar con la base de datos
 window.dbFunctions = {
   /**
    * Guarda un enlace en Firestore
    * @param {string} id - ID único del enlace
    * @param {object} data - Datos a guardar {videoUrl, redirectUrl}
+   * @returns {Promise<boolean>} True si se guardó correctamente
    */
   saveLink: async (id, data) => {
     try {
-      await setDoc(doc(db, "links", id), data);
+      await setDoc(doc(db, "links", id), {
+        videoUrl: data.videoUrl,
+        redirectUrl: data.redirectUrl,
+        createdAt: new Date().toISOString(),
+        views: 0
+      });
       console.log("Documento guardado con ID:", id);
       return true;
     } catch (error) {
-      console.error("Error al guardar:", error);
+      console.error("Error al guardar en Firestore:", error);
       return false;
     }
   },
-  
+
   /**
    * Obtiene un enlace desde Firestore
    * @param {string} id - ID del documento a recuperar
-   * @returns {object|null} Datos del enlace o null si no existe
+   * @returns {Promise<object|null>} Datos del enlace o null si no existe
    */
   getLink: async (id) => {
     try {
-      const docSnap = await getDoc(doc(db, "links", id));
-      return docSnap.exists() ? docSnap.data() : null;
+      const docRef = doc(db, "links", id);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        return docSnap.data();
+      } else {
+        console.log("No se encontró el documento con ID:", id);
+        return null;
+      }
     } catch (error) {
-      console.error("Error al leer:", error);
+      console.error("Error al leer de Firestore:", error);
       return null;
     }
   }
 };
 
-console.log("Firebase configurado correctamente");
+console.log("Firebase configurado correctamente. dbFunctions disponible.");
