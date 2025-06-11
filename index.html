@@ -267,20 +267,61 @@
 
     <script>
         document.getElementById("generateBtn").addEventListener("click", async () => {
-            const videoUrl = document.getElementById("videoUrl").value;
-            const redirectUrl = document.getElementById("redirectUrl").value;
+    const videoUrl = document.getElementById("videoUrl").value;
+    const redirectUrl = document.getElementById("redirectUrl").value;
 
-            if (!videoUrl || !redirectUrl) {
-                alert("Por favor completa ambos campos");
-                return;
-            }
+    if (!videoUrl || !redirectUrl) {
+        alert("Por favor completa ambos campos");
+        return;
+    }
 
-            try {
-                const id = Math.random().toString(36).substring(2, 8);
-                await window.dbFunctions.saveLink(id, {
-                    videoUrl: videoUrl,
-                    redirectUrl: redirectUrl
-                });
+    try {
+        // Mostrar indicador de carga
+        const generateBtn = document.getElementById("generateBtn");
+        generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+        generateBtn.disabled = true;
+
+        // Generar ID único
+        const id = Math.random().toString(36).substring(2, 10); // ID más largo
+        
+        // Verificar que dbFunctions esté disponible
+        if (!window.dbFunctions || typeof window.dbFunctions.saveLink !== 'function') {
+            throw new Error('Error: No se pudo conectar con la base de datos');
+        }
+
+        // Guardar en Firestore
+        const saveResult = await window.dbFunctions.saveLink(id, {
+            videoUrl: videoUrl,
+            redirectUrl: redirectUrl,
+            createdAt: new Date().toISOString() // Añadir timestamp
+        });
+
+        if (!saveResult) {
+            throw new Error('No se pudo guardar el enlace');
+        }
+
+        // Mostrar resultado
+        const generatedLink = `${window.location.origin}/play/${id}`;
+        document.getElementById("result").classList.add("success");
+        document.getElementById("successMessage").style.display = "flex";
+        document.getElementById("copyBtn").dataset.link = generatedLink;
+        document.getElementById("result").style.display = "block";
+
+        // Registrar en consola para debug
+        console.log("Enlace guardado con ID:", id, "Datos:", {
+            videoUrl,
+            redirectUrl
+        });
+
+    } catch (error) {
+        console.error("Error al guardar:", error);
+        alert(`Error al generar el enlace: ${error.message}`);
+    } finally {
+        // Restaurar botón
+        generateBtn.innerHTML = '<i class="fas fa-pen"></i> Generar Enlace';
+        generateBtn.disabled = false;
+    }
+});
 
                 const generatedLink = `${window.location.origin}/play/${id}`;
                 document.getElementById("result").classList.add("success");
