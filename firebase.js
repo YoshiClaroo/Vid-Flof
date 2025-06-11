@@ -1,14 +1,6 @@
-// Importa los módulos necesarios de Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
-import { 
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyANjIecB-LakVfSjbjd-Z3TsDlm0tbXEfU",
   authDomain: "vid-flof.firebaseapp.com",
@@ -19,56 +11,46 @@ const firebaseConfig = {
   measurementId: "G-6X1PK66KNQ"
 };
 
-// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// Funciones para trabajar con la base de datos
 window.dbFunctions = {
-  /**
-   * Guarda un enlace en Firestore
-   * @param {string} id - ID único del enlace
-   * @param {object} data - Datos a guardar {videoUrl, redirectUrl}
-   * @returns {Promise<boolean>} True si se guardó correctamente
-   */
   saveLink: async (id, data) => {
     try {
       await setDoc(doc(db, "links", id), {
         videoUrl: data.videoUrl,
         redirectUrl: data.redirectUrl,
         createdAt: new Date().toISOString(),
-        views: 0
+        views: 0,
+        lastAccessed: null
       });
-      console.log("Documento guardado con ID:", id);
-      return true;
+      console.log("✅ Enlace guardado con ID:", id);
+      return id;
     } catch (error) {
-      console.error("Error al guardar en Firestore:", error);
-      return false;
+      console.error("❌ Error al guardar:", error);
+      throw error;
     }
   },
-
-  /**
-   * Obtiene un enlace desde Firestore
-   * @param {string} id - ID del documento a recuperar
-   * @returns {Promise<object|null>} Datos del enlace o null si no existe
-   */
+  
   getLink: async (id) => {
     try {
       const docRef = doc(db, "links", id);
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists()) {
+        // Actualizar contador de vistas
+        await updateDoc(docRef, {
+          views: increment(1),
+          lastAccessed: new Date().toISOString()
+        });
         return docSnap.data();
-      } else {
-        console.log("No se encontró el documento con ID:", id);
-        return null;
       }
-    } catch (error) {
-      console.error("Error al leer de Firestore:", error);
       return null;
+    } catch (error) {
+      console.error("❌ Error al leer:", error);
+      throw error;
     }
   }
 };
 
-console.log("Firebase configurado correctamente. dbFunctions disponible.");
+console.log("🔥 Firebase configurado correctamente");
