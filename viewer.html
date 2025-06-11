@@ -77,9 +77,19 @@
       const sponsorBtn = document.getElementById('sponsorBtn');
 
       try {
-        // Obtener ID de los parámetros de consulta
+        // Obtener ID de la URL (compatible con ambas formas)
+        let id = null;
+        
+        // Primero intentar con parámetros de consulta (?id=)
         const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
+        if (urlParams.has('id')) {
+          id = urlParams.get('id');
+        } 
+        // Si no existe, intentar del path (/play/:id)
+        else {
+          const path = window.location.pathname.split('/');
+          id = path[path.length - 1];
+        }
 
         if (!id) {
           throw new Error('No se encontró ID de video en la URL');
